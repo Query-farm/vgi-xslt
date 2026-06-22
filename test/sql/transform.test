@@ -1,0 +1,90 @@
+# name: test/sql/transform.test
+# description: xslt() transform, xquery(), is_well_formed() + error cases
+# group: [vgi_xslt]
+
+require-env VGI_XSLT_WORKER
+
+statement ok
+LOAD vgi;
+
+statement ok
+ATTACH 'xslt' AS xslt (TYPE vgi, LOCATION '${VGI_XSLT_WORKER}');
+
+# ---------------------------------------------------------------------------
+# xslt() — value-extract transform
+# ---------------------------------------------------------------------------
+
+query I
+SELECT xslt.xslt(
+  '<p><name>Ada</name></p>',
+  '<xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"><xsl:output method="xml" omit-xml-declaration="yes"/><xsl:template match="/"><out><xsl:value-of select="//name"/></out></xsl:template></xsl:stylesheet>'
+);
+----
+<out>Ada</out>
+
+# NULL input -> NULL output.
+query I
+SELECT xslt.xslt(NULL, '<xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"/>') IS NULL;
+----
+true
+
+# ---------------------------------------------------------------------------
+# Error: a malformed stylesheet surfaces a clean DuckDB error
+# ---------------------------------------------------------------------------
+
+statement error
+SELECT xslt.xslt('<p/>', '<not-a-stylesheet/>');
+----
+
+# ---------------------------------------------------------------------------
+# xquery() — string-join over a sequence
+# ---------------------------------------------------------------------------
+
+query I
+SELECT xslt.xquery('<r><i>a</i><i>b</i></r>', 'string-join(//i, ",")');
+----
+a,b
+
+# ---------------------------------------------------------------------------
+# xquery_rows() — explode a FLWOR result sequence into (seq, value) rows
+# ---------------------------------------------------------------------------
+
+query II
+SELECT seq, value FROM xslt.xquery_rows('<r><i>1</i><i>2</i><i>3</i></r>', 'for $x in //i return $x * 2') ORDER BY seq;
+----
+1	2
+2	4
+3	6
+
+# ---------------------------------------------------------------------------
+# xpath_nodes() — one (seq, value) row per match in a single document
+# ---------------------------------------------------------------------------
+
+query II
+SELECT seq, value FROM xslt.xpath_nodes('<r><i>a</i><i>b</i></r>', '//i') ORDER BY seq;
+----
+1	a
+2	b
+
+# ---------------------------------------------------------------------------
+# is_well_formed() — true / false, never an error
+# ---------------------------------------------------------------------------
+
+query I
+SELECT xslt.is_well_formed('<a><b/></a>');
+----
+true
+
+query I
+SELECT xslt.is_well_formed('<a><b></a>');
+----
+false
+
+# ---------------------------------------------------------------------------
+# saxon_version() — discovery
+# ---------------------------------------------------------------------------
+
+query I
+SELECT version LIKE '%Saxon%' FROM xslt.saxon_version();
+----
+true

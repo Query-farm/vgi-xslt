@@ -1,0 +1,105 @@
+# name: test/sql/xpath.test
+# description: XPath scalar functions — string/boolean/number/array + the headline shred
+# group: [vgi_xslt]
+
+require-env VGI_XSLT_WORKER
+
+statement ok
+LOAD vgi;
+
+statement ok
+ATTACH 'xslt' AS xslt (TYPE vgi, LOCATION '${VGI_XSLT_WORKER}');
+
+# ---------------------------------------------------------------------------
+# xpath_string — string value of the first match; NULL when nothing matches
+# ---------------------------------------------------------------------------
+
+query I
+SELECT xslt.xpath_string('<r><a>x</a><a>y</a></r>', '//a');
+----
+x
+
+query I
+SELECT xslt.xpath_string('<r><a>x</a></r>', '//z') IS NULL;
+----
+true
+
+# Attribute value via string().
+query I
+SELECT xslt.xpath_string('<r id="42"/>', 'string(/r/@id)');
+----
+42
+
+# ---------------------------------------------------------------------------
+# xpath_boolean — effective boolean value
+# ---------------------------------------------------------------------------
+
+query I
+SELECT xslt.xpath_boolean('<r><a/></r>', 'count(//a) = 1');
+----
+true
+
+query I
+SELECT xslt.xpath_boolean('<r><a/></r>', 'exists(//z)');
+----
+false
+
+# ---------------------------------------------------------------------------
+# xpath_number — numeric value of the first match
+# ---------------------------------------------------------------------------
+
+query I
+SELECT xslt.xpath_number('<r><n>42</n></r>', 'number(//n)');
+----
+42.0
+
+query I
+SELECT xslt.xpath_number('<r><i/><i/><i/></r>', 'count(//i)');
+----
+3.0
+
+# ---------------------------------------------------------------------------
+# xpath_array — HEADLINE: shred all matches into rows via UNNEST
+# ---------------------------------------------------------------------------
+
+query I
+SELECT UNNEST(xslt.xpath_array('<r><i>a</i><i>b</i></r>', '//i'));
+----
+a
+b
+
+# Per-row shred over a documents table.
+query II
+SELECT id, UNNEST(xslt.xpath_array(doc, '//item'))
+FROM (VALUES
+  (1, '<r><item>a</item><item>b</item></r>'),
+  (2, '<r><item>c</item></r>')
+) AS t(id, doc)
+ORDER BY 1, 2;
+----
+1	a
+1	b
+2	c
+
+# No match -> empty list -> no rows.
+query I
+SELECT count(*) FROM (SELECT UNNEST(xslt.xpath_array('<r><i>a</i></r>', '//z')) AS v) sub;
+----
+0
+
+# ---------------------------------------------------------------------------
+# Namespaced document — wildcard-namespace path
+# ---------------------------------------------------------------------------
+
+query I
+SELECT xslt.xpath_string('<r xmlns:n="http://x/"><n:item>hi</n:item></r>', '//*:item');
+----
+hi
+
+# ---------------------------------------------------------------------------
+# Error: a malformed XPath expression surfaces a clean DuckDB error
+# ---------------------------------------------------------------------------
+
+statement error
+SELECT xslt.xpath_string('<r/>', '//[broken');
+----
