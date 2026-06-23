@@ -4,7 +4,9 @@
 
 <p align="center"><em>A <a href="https://query.farm">Query.Farm</a> VGI worker for DuckDB.</em></p>
 
-# vgi-xslt
+# Run XSLT 3.0, XQuery 3.1 & XPath 3.1 over XML in DuckDB
+
+> **vgi-xslt** · a [Query.Farm](https://query.farm) VGI worker · powered by SaxonC-HE
 
 [![CI](https://github.com/Query-farm/vgi-xslt/actions/workflows/ci.yml/badge.svg)](https://github.com/Query-farm/vgi-xslt/actions/workflows/ci.yml)
 
