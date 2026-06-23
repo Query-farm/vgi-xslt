@@ -54,9 +54,7 @@ def _map2[T](
 ) -> pa.Array:
     xs = a.to_pylist()
     ys = b.to_pylist()
-    out: list[T | None] = [
-        None if (x is None or y is None) else fn(x, y) for x, y in zip(xs, ys, strict=True)
-    ]
+    out: list[T | None] = [None if (x is None or y is None) else fn(x, y) for x, y in zip(xs, ys, strict=True)]
     return pa.array(out, type=arrow_type)
 
 
@@ -64,6 +62,8 @@ class XsltFunction(ScalarFunction):
     """``xslt(xml, stylesheet)`` -- transform xml with an XSLT 3.0 stylesheet."""
 
     class Meta:
+        """Function metadata."""
+
         name = "xslt"
         description = "Transform an XML document with an XSLT 3.0 stylesheet; returns the serialized result"
         categories = ["xslt", "transform"]
@@ -85,6 +85,7 @@ class XsltFunction(ScalarFunction):
         xml: Annotated[pa.StringArray, Param(doc="XML document to transform.")],
         stylesheet: Annotated[pa.StringArray, Param(doc="XSLT 3.0 stylesheet source.")],
     ) -> Annotated[pa.StringArray, Returns()]:
+        """Map each input row to its output value."""
         return _map2(xml, stylesheet, engine.transform, pa.string())
 
 
@@ -92,6 +93,8 @@ class XPathStringFunction(ScalarFunction):
     """``xpath_string(xml, expr)`` -- string value of the first match, or NULL."""
 
     class Meta:
+        """Function metadata."""
+
         name = "xpath_string"
         description = "String value of the first node/atomic matching an XPath 3.1 expression (NULL if none)"
         categories = ["xslt", "xpath"]
@@ -108,6 +111,7 @@ class XPathStringFunction(ScalarFunction):
         xml: Annotated[pa.StringArray, Param(doc="XML document.")],
         expr: Annotated[pa.StringArray, Param(doc="XPath 3.1 expression.")],
     ) -> Annotated[pa.StringArray, Returns()]:
+        """Map each input row to its output value."""
         return _map2(xml, expr, engine.xpath_string, pa.string())
 
 
@@ -115,6 +119,8 @@ class XPathBooleanFunction(ScalarFunction):
     """``xpath_boolean(xml, expr)`` -- effective boolean value of the expression."""
 
     class Meta:
+        """Function metadata."""
+
         name = "xpath_boolean"
         description = "Effective boolean value of an XPath 3.1 expression over the document"
         categories = ["xslt", "xpath"]
@@ -131,6 +137,7 @@ class XPathBooleanFunction(ScalarFunction):
         xml: Annotated[pa.StringArray, Param(doc="XML document.")],
         expr: Annotated[pa.StringArray, Param(doc="XPath 3.1 boolean expression.")],
     ) -> Annotated[pa.BooleanArray, Returns()]:
+        """Map each input row to its output value."""
         return _map2(xml, expr, engine.xpath_boolean, pa.bool_())
 
 
@@ -138,6 +145,8 @@ class XPathNumberFunction(ScalarFunction):
     """``xpath_number(xml, expr)`` -- numeric value of the first match, or NULL."""
 
     class Meta:
+        """Function metadata."""
+
         name = "xpath_number"
         description = "Numeric (DOUBLE) value of the first XPath 3.1 match (NULL if non-numeric)"
         categories = ["xslt", "xpath"]
@@ -154,6 +163,7 @@ class XPathNumberFunction(ScalarFunction):
         xml: Annotated[pa.StringArray, Param(doc="XML document.")],
         expr: Annotated[pa.StringArray, Param(doc="XPath 3.1 numeric expression.")],
     ) -> Annotated[pa.DoubleArray, Returns()]:
+        """Map each input row to its output value."""
         return _map2(xml, expr, engine.xpath_number, pa.float64())
 
 
@@ -161,6 +171,8 @@ class XPathArrayFunction(ScalarFunction):
     """``xpath_array(xml, expr)`` -- string values of ALL matches as a VARCHAR[]."""
 
     class Meta:
+        """Function metadata."""
+
         name = "xpath_array"
         description = (
             "String values of ALL matches of an XPath 3.1 expression, as a list -- "
@@ -182,6 +194,7 @@ class XPathArrayFunction(ScalarFunction):
         # A LIST return type must declare its element type explicitly; the SDK
         # raises at class-definition time if Returns() can't infer it.
     ) -> Annotated[pa.ListArray, Returns(arrow_type=pa.list_(pa.string()))]:
+        """Map each input row to its output value."""
         return _map2(xml, expr, engine.xpath_array, pa.list_(pa.string()))
 
 
@@ -189,10 +202,10 @@ class XQueryFunction(ScalarFunction):
     """``xquery(xml, query)`` -- run an XQuery 3.1 query; serialized result."""
 
     class Meta:
+        """Function metadata."""
+
         name = "xquery"
-        description = (
-            "Run an XQuery 3.1 query with the document as context item; returns the serialized result"
-        )
+        description = "Run an XQuery 3.1 query with the document as context item; returns the serialized result"
         categories = ["xslt", "xquery"]
         examples = [
             FunctionExample(
@@ -207,6 +220,7 @@ class XQueryFunction(ScalarFunction):
         xml: Annotated[pa.StringArray, Param(doc="XML document (the context item).")],
         query: Annotated[pa.StringArray, Param(doc="XQuery 3.1 query source.")],
     ) -> Annotated[pa.StringArray, Returns()]:
+        """Map each input row to its output value."""
         return _map2(xml, query, engine.xquery, pa.string())
 
 
@@ -214,6 +228,8 @@ class IsWellFormedFunction(ScalarFunction):
     """``is_well_formed(xml)`` -- true if the document parses; false if malformed."""
 
     class Meta:
+        """Function metadata."""
+
         name = "is_well_formed"
         description = "True if the text is well-formed XML; false if malformed (never an error)"
         categories = ["xslt", "xml"]
@@ -229,6 +245,7 @@ class IsWellFormedFunction(ScalarFunction):
         cls,
         xml: Annotated[pa.StringArray, Param(doc="Candidate XML text.")],
     ) -> Annotated[pa.BooleanArray, Returns()]:
+        """Map each input row to its output value."""
         out = [None if x is None else engine.is_well_formed(x) for x in xml.to_pylist()]
         return pa.array(out, type=pa.bool_())
 

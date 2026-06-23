@@ -1,5 +1,7 @@
-"""Pure Saxon engine: the singleton processor, compile caches, and the
-string-in / string-out transform / query / XPath primitives.
+"""Pure Saxon engine: processor singleton, compile caches, and string primitives.
+
+The singleton processor, the compile caches, and the string-in / string-out
+transform / query / XPath primitives all live here.
 
 This module is the only place that touches ``saxonche``. It deliberately has no
 Arrow or VGI dependency, so it is directly unit-testable. Everything above it
@@ -38,6 +40,7 @@ malformed XML as ``False`` instead of raising.
 
 from __future__ import annotations
 
+import contextlib
 import threading
 from functools import lru_cache
 from typing import TYPE_CHECKING, Any
@@ -119,10 +122,8 @@ def _compiled_query(query: str) -> PyXQueryProcessor:
     """
     proc = _processor()
     xq: PyXQueryProcessor = proc.new_xquery_processor()
-    try:
+    with contextlib.suppress(Exception):  # property is best-effort.
         xq.set_property("!omit-xml-declaration", "yes")
-    except Exception:  # pragma: no cover - property is best-effort.
-        pass
     try:
         xq.set_query_content(query)
     except Exception as exc:

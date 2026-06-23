@@ -58,6 +58,8 @@ class XPathNodesFunction(TableFunctionGenerator[_DocExprArgs]):
     FIXED_SCHEMA: ClassVar[pa.Schema] = _SEQ_VALUE_SCHEMA
 
     class Meta:
+        """Function metadata."""
+
         name = "xpath_nodes"
         description = "One (seq, value) row per XPath 3.1 match in a single document"
         categories = ["xslt", "xpath"]
@@ -70,10 +72,12 @@ class XPathNodesFunction(TableFunctionGenerator[_DocExprArgs]):
 
     @classmethod
     def cardinality(cls, params: BindParams[_DocExprArgs]) -> TableCardinality:
+        """Estimated and maximum row count for the planner."""
         return TableCardinality(estimate=None, max=None)
 
     @classmethod
     def process(cls, params: ProcessParams[_DocExprArgs], state: None, out: OutputCollector) -> None:
+        """Emit the output rows produced by this invocation."""
         a = params.args
         values = engine.xpath_array(a.xml, a.expr)
         out.emit(
@@ -96,6 +100,8 @@ class XQueryRowsFunction(TableFunctionGenerator[_DocExprArgs]):
     FIXED_SCHEMA: ClassVar[pa.Schema] = _SEQ_VALUE_SCHEMA
 
     class Meta:
+        """Function metadata."""
+
         name = "xquery_rows"
         description = "One (seq, value) row per item in an XQuery 3.1 result sequence"
         categories = ["xslt", "xquery"]
@@ -108,10 +114,12 @@ class XQueryRowsFunction(TableFunctionGenerator[_DocExprArgs]):
 
     @classmethod
     def cardinality(cls, params: BindParams[_DocExprArgs]) -> TableCardinality:
+        """Estimated and maximum row count for the planner."""
         return TableCardinality(estimate=None, max=None)
 
     @classmethod
     def process(cls, params: ProcessParams[_DocExprArgs], state: None, out: OutputCollector) -> None:
+        """Emit the output rows produced by this invocation."""
         a = params.args
         values = engine.xquery_items(a.xml, a.expr)
         out.emit(
@@ -142,6 +150,8 @@ class SaxonVersionFunction(TableFunctionGenerator[_NoArgs]):
     FIXED_SCHEMA: ClassVar[pa.Schema] = _VERSION_SCHEMA
 
     class Meta:
+        """Function metadata."""
+
         name = "saxon_version"
         description = "The SaxonC version string backing this worker (single row)"
         categories = ["xslt", "discovery"]
@@ -154,10 +164,12 @@ class SaxonVersionFunction(TableFunctionGenerator[_NoArgs]):
 
     @classmethod
     def cardinality(cls, params: BindParams[_NoArgs]) -> TableCardinality:
+        """Estimated and maximum row count for the planner."""
         return TableCardinality(estimate=1, max=1)
 
     @classmethod
     def process(cls, params: ProcessParams[_NoArgs], state: None, out: OutputCollector) -> None:
+        """Emit the output rows produced by this invocation."""
         out.emit(
             pa.RecordBatch.from_pydict(
                 {"version": [engine.version()]},
