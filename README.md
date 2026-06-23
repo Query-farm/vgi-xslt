@@ -1,3 +1,9 @@
+<p align="center">
+  <img src="docs/vgi-logo.png" alt="Vector Gateway Interface (VGI)" width="320">
+</p>
+
+<p align="center"><em>A <a href="https://query.farm">Query.Farm</a> VGI worker for DuckDB.</em></p>
+
 # vgi-xslt
 
 [![CI](https://github.com/Query-farm/vgi-xslt/actions/workflows/ci.yml/badge.svg)](https://github.com/Query-farm/vgi-xslt/actions/workflows/ci.yml)
@@ -194,3 +200,12 @@ tests/
 test/sql/
   *.test                 DuckDB sqllogictest end-to-end cases (haybarn-unittest)
 ```
+
+---
+
+## Authorship & License
+
+Written by [Query.Farm](https://query.farm) — every VGI worker is designed and built by Query.Farm.
+
+Copyright 2026 Query Farm LLC - https://query.farm
+
