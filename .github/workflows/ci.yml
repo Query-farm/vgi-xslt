@@ -72,7 +72,7 @@ jobs:
       # vgi-rpc's `docstring-parser`, which collides with pydoclint's required
       # `docstring-parser-fork` in the shared `docstring_parser` import namespace.
       - name: Docstring lint (pydoclint)
-        run: uvx pydoclint vgi_xslt/ xslt_worker.py
+        run: uvx pydoclint --config pyproject.toml vgi_xslt/ xslt_worker.py
 
   # Resolve the latest published haybarn release once, so the whole matrix tests
   # the same version (and we never hardcode/pin it).
