@@ -34,6 +34,19 @@ from vgi_rpc.rpc import OutputCollector
 from . import engine
 from .schema_utils import field
 
+_SEQ_VALUE_COLUMNS_MD = (
+    "| Column | Type | Description |\n"
+    "| --- | --- | --- |\n"
+    "| `seq` | BIGINT | 1-based position of the match in document/sequence order |\n"
+    "| `value` | VARCHAR | String value of the matched node/item |"
+)
+
+_VERSION_COLUMNS_MD = (
+    "| Column | Type | Description |\n"
+    "| --- | --- | --- |\n"
+    "| `version` | VARCHAR | SaxonC version string backing this worker |"
+)
+
 _SEQ_VALUE_SCHEMA = pa.schema(
     [
         field("seq", pa.int64(), "1-based position of the match in document/sequence order.", nullable=False),
@@ -63,6 +76,7 @@ class XPathNodesFunction(TableFunctionGenerator[_DocExprArgs]):
         name = "xpath_nodes"
         description = "One (seq, value) row per XPath 3.1 match in a single document"
         categories = ["xslt", "xpath"]
+        tags = {"vgi.columns_md": _SEQ_VALUE_COLUMNS_MD}
         examples = [
             FunctionExample(
                 sql="SELECT * FROM xslt.xpath_nodes('<r><i>a</i><i>b</i></r>', '//i')",
@@ -105,6 +119,7 @@ class XQueryRowsFunction(TableFunctionGenerator[_DocExprArgs]):
         name = "xquery_rows"
         description = "One (seq, value) row per item in an XQuery 3.1 result sequence"
         categories = ["xslt", "xquery"]
+        tags = {"vgi.columns_md": _SEQ_VALUE_COLUMNS_MD}
         examples = [
             FunctionExample(
                 sql="SELECT * FROM xslt.xquery_rows('<r><i>1</i><i>2</i></r>', 'for $x in //i return $x*2')",
@@ -155,6 +170,7 @@ class SaxonVersionFunction(TableFunctionGenerator[_NoArgs]):
         name = "saxon_version"
         description = "The SaxonC version string backing this worker (single row)"
         categories = ["xslt", "discovery"]
+        tags = {"vgi.columns_md": _VERSION_COLUMNS_MD}
         examples = [
             FunctionExample(
                 sql="SELECT * FROM xslt.saxon_version()",

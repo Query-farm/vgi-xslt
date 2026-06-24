@@ -1,7 +1,7 @@
 # /// script
 # requires-python = ">=3.13"
 # dependencies = [
-#     "vgi-python[http]>=0.8.3",
+#     "vgi-python[http]>=0.8.4",
 #     "saxonche>=13.0",
 # ]
 # ///
@@ -42,13 +42,59 @@ _FUNCTIONS: list[type] = [
     *TABLE_FUNCTIONS,
 ]
 
+_CATALOG_DESCRIPTION_LLM = (
+    "Transform, query, and shred XML in SQL using XSLT 3.0, XQuery 3.1, and XPath 3.1, backed by "
+    "SaxonC-HE. Apply an XSLT stylesheet to a document (xslt), pull the string/boolean/numeric value "
+    "of an XPath expression (xpath_string / xpath_boolean / xpath_number), collect every XPath match "
+    "into a list to UNNEST into rows (xpath_array), run an XQuery with the document as context item "
+    "(xquery), check whether text is well-formed XML (is_well_formed), and explode one document into "
+    "rows via the table functions xpath_nodes (per XPath match) and xquery_rows (per XQuery sequence "
+    "item). Use for XML extraction/transformation, shredding XML into relational rows, and "
+    "well-formedness checks. Note: SaxonC-HE is not schema-aware, so there is no XSD validation."
+)
+
+_CATALOG_DESCRIPTION_MD = (
+    "# xslt\n\n"
+    "XSLT 3.0 / XQuery 3.1 / XPath 3.1 over XML for SQL, backed by SaxonC-HE.\n\n"
+    "**Scalars:** `xslt` (transform), `xpath_string`, `xpath_boolean`, `xpath_number`, "
+    "`xpath_array` (UNNEST to shred), `xquery`, `is_well_formed`.\n\n"
+    "**Table functions:** `xpath_nodes` (one row per XPath match), `xquery_rows` (one row per "
+    "XQuery result item), `saxon_version` (the SaxonC version)."
+)
+
+_SCHEMA_DESCRIPTION_LLM = (
+    "XSLT/XQuery/XPath functions over XML: transform documents, evaluate XPath to string/boolean/"
+    "number/list, run XQuery, test well-formedness, and shred a document into rows."
+)
+
+_SCHEMA_DESCRIPTION_MD = "XSLT 3.0 / XQuery 3.1 / XPath 3.1 functions over XML (SaxonC-HE)."
+
+_PROVENANCE_TAGS = {
+    "vgi.author": "Query.Farm",
+    "vgi.copyright": "Copyright 2026 Query Farm LLC - https://query.farm",
+    "vgi.license": "MIT",
+    "vgi.support_contact": "https://github.com/Query-farm/vgi-xslt/issues",
+    "vgi.support_policy_url": "https://github.com/Query-farm/vgi-xslt/blob/main/README.md",
+}
+
 _XSLT_CATALOG = Catalog(
     name="xslt",
     default_schema="main",
+    comment="XSLT 3.0 / XQuery 3.1 / XPath 3.1 over XML for SQL (SaxonC-HE).",
+    source_url="https://github.com/Query-farm/vgi-xslt",
+    tags={
+        "vgi.description_llm": _CATALOG_DESCRIPTION_LLM,
+        "vgi.description_md": _CATALOG_DESCRIPTION_MD,
+        **_PROVENANCE_TAGS,
+    },
     schemas=[
         Schema(
             name="main",
             comment="XSLT 3.0 / XQuery 3.1 / XPath 3.1 over XML for SQL (SaxonC-HE)",
+            tags={
+                "vgi.description_llm": _SCHEMA_DESCRIPTION_LLM,
+                "vgi.description_md": _SCHEMA_DESCRIPTION_MD,
+            },
             functions=list(_FUNCTIONS),
         ),
     ],
