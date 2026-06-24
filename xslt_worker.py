@@ -64,10 +64,34 @@ _CATALOG_DESCRIPTION_MD = (
 
 _SCHEMA_DESCRIPTION_LLM = (
     "XSLT/XQuery/XPath functions over XML: transform documents, evaluate XPath to string/boolean/"
-    "number/list, run XQuery, test well-formedness, and shred a document into rows."
+    "number/list, run XQuery, test well-formedness, and shred a document into rows. Scalars: "
+    "`xslt`, `xpath_string`, `xpath_boolean`, `xpath_number`, `xpath_array`, `xquery`, "
+    "`is_well_formed`. Table functions: `xpath_nodes`, `xquery_rows`, `saxon_version`."
 )
 
-_SCHEMA_DESCRIPTION_MD = "XSLT 3.0 / XQuery 3.1 / XPath 3.1 functions over XML (SaxonC-HE)."
+_SCHEMA_DESCRIPTION_MD = (
+    "# main\n\n"
+    "XSLT 3.0 / XQuery 3.1 / XPath 3.1 functions over XML, backed by SaxonC-HE.\n\n"
+    "Use the scalars (`xslt`, `xpath_string`, `xpath_boolean`, `xpath_number`, `xpath_array`, "
+    "`xquery`, `is_well_formed`) for per-row work, and the table functions (`xpath_nodes`, "
+    "`xquery_rows`, `saxon_version`) to explode one document into rows."
+)
+
+_SCHEMA_KEYWORDS = (
+    "xslt, xquery, xpath, xml, transform, shred, query xml, well-formed, saxon, "
+    "xpath_string, xpath_array, xquery_rows, xpath_nodes"
+)
+
+_SCHEMA_EXAMPLE_QUERIES = (
+    "SELECT xslt.main.xpath_string('<r><a>x</a></r>', '//a');\n"
+    "SELECT xslt.main.xpath_boolean('<r><a/></r>', 'count(//a) = 1');\n"
+    "SELECT xslt.main.xpath_number('<r><n>42</n></r>', 'number(//n)');\n"
+    "SELECT UNNEST(xslt.main.xpath_array('<r><i>a</i><i>b</i></r>', '//i'));\n"
+    "SELECT xslt.main.xquery('<r><i>a</i><i>b</i></r>', 'string-join(//i, \",\")');\n"
+    "SELECT xslt.main.is_well_formed('<a></a>');\n"
+    "SELECT * FROM xslt.main.xpath_nodes('<r><i>a</i><i>b</i></r>', '//i');\n"
+    "SELECT * FROM xslt.main.saxon_version();"
+)
 
 _PROVENANCE_TAGS = {
     "vgi.author": "Query.Farm",
@@ -83,8 +107,13 @@ _XSLT_CATALOG = Catalog(
     comment="XSLT 3.0 / XQuery 3.1 / XPath 3.1 over XML for SQL (SaxonC-HE).",
     source_url="https://github.com/Query-farm/vgi-xslt",
     tags={
-        "vgi.description_llm": _CATALOG_DESCRIPTION_LLM,
-        "vgi.description_md": _CATALOG_DESCRIPTION_MD,
+        "vgi.title": "XSLT, XQuery & XPath for XML",
+        "vgi.keywords": (
+            "xslt, xquery, xpath, xml, transform, shred, query xml, well-formed, "
+            "saxon, stylesheet, flwor, xml processing"
+        ),
+        "vgi.doc_llm": _CATALOG_DESCRIPTION_LLM,
+        "vgi.doc_md": _CATALOG_DESCRIPTION_MD,
         **_PROVENANCE_TAGS,
     },
     schemas=[
@@ -92,8 +121,17 @@ _XSLT_CATALOG = Catalog(
             name="main",
             comment="XSLT 3.0 / XQuery 3.1 / XPath 3.1 over XML for SQL (SaxonC-HE)",
             tags={
-                "vgi.description_llm": _SCHEMA_DESCRIPTION_LLM,
-                "vgi.description_md": _SCHEMA_DESCRIPTION_MD,
+                "vgi.title": "XSLT — main",
+                "vgi.keywords": _SCHEMA_KEYWORDS,
+                # VGI123 classifying tags use BARE keys (not vgi.-namespaced).
+                "domain": "xml",
+                "category": "xml-processing",
+                "topic": "xslt-xquery-xpath",
+                "vgi.source_url": "https://github.com/Query-farm/vgi-xslt/blob/main/xslt_worker.py",
+                "vgi.doc_llm": _SCHEMA_DESCRIPTION_LLM,
+                "vgi.doc_md": _SCHEMA_DESCRIPTION_MD,
+                # VGI506 representative example queries for the schema.
+                "vgi.example_queries": _SCHEMA_EXAMPLE_QUERIES,
             },
             functions=list(_FUNCTIONS),
         ),
