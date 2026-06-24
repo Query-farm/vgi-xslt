@@ -91,11 +91,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 
   integration:
-    name: End-to-end SQL on ${{ matrix.os }}
+    name: SQL E2E (${{ matrix.transport }}) on ${{ matrix.os }}
     needs: resolve-haybarn
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-latest, macos-latest]
+        transport: [subprocess, http, unix]
         include:
           - { os: ubuntu-latest, asset: haybarn_unittest-linux-amd64.zip }
           - { os: macos-latest,  asset: haybarn_unittest-osx-arm64.zip }
@@ -113,7 +115,7 @@ jobs:
         run: uv python install 3.13
 
       - name: Install the worker (from the lockfile)
-        run: uv sync --frozen --python 3.13
+        run: uv sync --frozen --python 3.13 --extra http
 
       - name: Download haybarn-unittest
         run: |
@@ -136,7 +138,9 @@ jobs:
           UNITTEST="$PWD/$(find hb -name 'haybarn-unittest' -type f | head -1)"
           chmod +x "$UNITTEST"
           echo "HAYBARN_UNITTEST=$UNITTEST" >> "$GITHUB_ENV"
-          echo "VGI_XSLT_WORKER=uv run --python 3.13 $PWD/xslt_worker.py" >> "$GITHUB_ENV"
+          echo "WORKER_CMD=uv run --python 3.13 $PWD/xslt_worker.py" >> "$GITHUB_ENV"
 
-      - name: Run extension integration suite
+      - name: Run extension integration suite (${{ matrix.transport }})
         run: ci/run-integration.sh
+        env:
+          TRANSPORT: ${{ matrix.transport }}
