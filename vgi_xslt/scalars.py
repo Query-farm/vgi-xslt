@@ -40,8 +40,6 @@ from vgi.scalar_function import ScalarFunction
 from . import engine
 from .meta import object_tags
 
-_SCALARS_SRC = "vgi_xslt/scalars.py"
-
 # VGI509: a guaranteed-runnable, self-contained executable example shipped on at
 # least one object. Catalog-qualified SQL; expected_result omitted (optional).
 _XSLT_STYLESHEET = (
@@ -127,8 +125,16 @@ class XsltFunction(ScalarFunction):
                     "- Invalid XML or stylesheet raises a DuckDB error.\n"
                     "- A constant stylesheet is compiled once and reused across rows."
                 ),
-                keywords="xslt, transform, stylesheet, xsl, transformation, xml, saxon, reshape xml",
-                relative_path=_SCALARS_SRC,
+                keywords=[
+                    "xslt",
+                    "transform",
+                    "stylesheet",
+                    "xsl",
+                    "transformation",
+                    "xml",
+                    "saxon",
+                    "reshape xml",
+                ],
             ),
             "vgi.executable_examples": _XSLT_EXECUTABLE_EXAMPLES,
         }
@@ -186,8 +192,16 @@ class XPathStringFunction(ScalarFunction):
                 "- NULL input -> NULL output; invalid XML/XPath raises an error.\n"
                 "- Namespace-agnostic matching: `//*:tag` or `local-name() = 'tag'`."
             ),
-            keywords="xpath, extract, string value, text, attribute, query xml, select, saxon",
-            relative_path=_SCALARS_SRC,
+            keywords=[
+                "xpath",
+                "extract",
+                "string value",
+                "text",
+                "attribute",
+                "query xml",
+                "select",
+                "saxon",
+            ],
         )
         examples = [
             FunctionExample(
@@ -241,8 +255,17 @@ class XPathBooleanFunction(ScalarFunction):
                 "- Follows XPath effective-boolean-value rules (existence, numbers, strings).\n"
                 "- NULL input -> NULL output; invalid XML/XPath raises an error."
             ),
-            keywords="xpath, boolean, predicate, exists, test, condition, ebv, query xml, saxon",
-            relative_path=_SCALARS_SRC,
+            keywords=[
+                "xpath",
+                "boolean",
+                "predicate",
+                "exists",
+                "test",
+                "condition",
+                "ebv",
+                "query xml",
+                "saxon",
+            ],
         )
         examples = [
             FunctionExample(
@@ -255,7 +278,10 @@ class XPathBooleanFunction(ScalarFunction):
     def compute(
         cls,
         xml: Annotated[pa.StringArray, Param(doc="XML document.")],
-        expr: Annotated[pa.StringArray, Param(doc="XPath 3.1 boolean expression.")],
+        expr: Annotated[
+            pa.StringArray,
+            Param(doc="XPath 3.1 expression evaluated as a true/false test, e.g. existence or a count predicate."),
+        ],
     ) -> Annotated[pa.BooleanArray, Returns()]:
         """Map each input row to its output value."""
         return _map2(xml, expr, engine.xpath_boolean, pa.bool_())
@@ -298,8 +324,17 @@ class XPathNumberFunction(ScalarFunction):
                 "- Use XPath aggregates like `count(...)` / `sum(...)` directly.\n"
                 "- NULL input -> NULL output; invalid XML/XPath raises an error."
             ),
-            keywords="xpath, number, numeric, double, count, sum, measurement, query xml, saxon",
-            relative_path=_SCALARS_SRC,
+            keywords=[
+                "xpath",
+                "number",
+                "numeric",
+                "double",
+                "count",
+                "sum",
+                "measurement",
+                "query xml",
+                "saxon",
+            ],
         )
         examples = [
             FunctionExample(
@@ -312,7 +347,10 @@ class XPathNumberFunction(ScalarFunction):
     def compute(
         cls,
         xml: Annotated[pa.StringArray, Param(doc="XML document.")],
-        expr: Annotated[pa.StringArray, Param(doc="XPath 3.1 numeric expression.")],
+        expr: Annotated[
+            pa.StringArray,
+            Param(doc="XPath 3.1 expression whose value (e.g. a count, sum, or measurement) is read as a number."),
+        ],
     ) -> Annotated[pa.DoubleArray, Returns()]:
         """Map each input row to its output value."""
         return _map2(xml, expr, engine.xpath_number, pa.float64())
@@ -359,8 +397,17 @@ class XPathArrayFunction(ScalarFunction):
                 "- For a single constant document, the `xpath_nodes` table function is handier.\n"
                 "- NULL input -> NULL output; invalid XML/XPath raises an error."
             ),
-            keywords="xpath, array, list, shred, unnest, all matches, explode, query xml, saxon",
-            relative_path=_SCALARS_SRC,
+            keywords=[
+                "xpath",
+                "array",
+                "list",
+                "shred",
+                "unnest",
+                "all matches",
+                "explode",
+                "query xml",
+                "saxon",
+            ],
         )
         examples = [
             FunctionExample(
@@ -421,8 +468,16 @@ class XQueryFunction(ScalarFunction):
                 "- For a result sequence, `xquery_rows` returns one row per item.\n"
                 "- NULL input -> NULL output; invalid XML/query raises an error."
             ),
-            keywords="xquery, flwor, query xml, string-join, sequence, construct, transform, saxon",
-            relative_path=_SCALARS_SRC,
+            keywords=[
+                "xquery",
+                "flwor",
+                "query xml",
+                "string-join",
+                "sequence",
+                "construct",
+                "transform",
+                "saxon",
+            ],
         )
         examples = [
             FunctionExample(
@@ -479,8 +534,17 @@ class IsWellFormedFunction(ScalarFunction):
                 "- Safe to use in `WHERE` to filter out malformed rows.\n"
                 "- NULL input -> NULL output."
             ),
-            keywords="well-formed, validate, valid xml, parse, malformed, check, filter, xml, saxon",
-            relative_path=_SCALARS_SRC,
+            keywords=[
+                "well-formed",
+                "validate",
+                "valid xml",
+                "parse",
+                "malformed",
+                "check",
+                "filter",
+                "xml",
+                "saxon",
+            ],
         )
         examples = [
             FunctionExample(

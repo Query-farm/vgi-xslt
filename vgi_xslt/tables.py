@@ -35,8 +35,6 @@ from . import engine
 from .meta import object_tags
 from .schema_utils import field
 
-_TABLES_SRC = "vgi_xslt/tables.py"
-
 _SEQ_VALUE_COLUMNS_MD = (
     "| Column | Type | Description |\n"
     "| --- | --- | --- |\n"
@@ -109,8 +107,17 @@ class XPathNodesFunction(TableFunctionGenerator[_DocExprArgs]):
                     "- `seq` is the 1-based document-order position of each match.\n"
                     "- Invalid XML/XPath raises an error."
                 ),
-                keywords="xpath, table, rows, shred, explode, nodes, sequence, query xml, saxon",
-                relative_path=_TABLES_SRC,
+                keywords=[
+                    "xpath",
+                    "table",
+                    "rows",
+                    "shred",
+                    "explode",
+                    "nodes",
+                    "sequence",
+                    "query xml",
+                    "saxon",
+                ],
             ),
             "vgi.result_columns_md": _SEQ_VALUE_COLUMNS_MD,
         }
@@ -188,8 +195,17 @@ class XQueryRowsFunction(TableFunctionGenerator[_DocExprArgs]):
                     "- Use the `xquery` scalar for a single serialized result.\n"
                     "- Invalid XML/query raises an error."
                 ),
-                keywords="xquery, table, rows, flwor, sequence, explode, shred, query xml, saxon",
-                relative_path=_TABLES_SRC,
+                keywords=[
+                    "xquery",
+                    "table",
+                    "rows",
+                    "flwor",
+                    "sequence",
+                    "explode",
+                    "shred",
+                    "query xml",
+                    "saxon",
+                ],
             ),
             "vgi.result_columns_md": _SEQ_VALUE_COLUMNS_MD,
         }
@@ -270,8 +286,16 @@ class SaxonVersionFunction(TableFunctionGenerator[_NoArgs]):
                     "- Always one row; no arguments.\n"
                     "- Handy as a connectivity/version smoke-test."
                 ),
-                keywords="saxon, version, discovery, diagnostics, engine, info, smoke test, xslt",
-                relative_path=_TABLES_SRC,
+                keywords=[
+                    "saxon",
+                    "version",
+                    "discovery",
+                    "diagnostics",
+                    "engine",
+                    "info",
+                    "smoke test",
+                    "xslt",
+                ],
             ),
             "vgi.result_columns_md": _VERSION_COLUMNS_MD,
         }

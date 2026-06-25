@@ -1,7 +1,7 @@
 # /// script
 # requires-python = ">=3.13"
 # dependencies = [
-#     "vgi-python[http]>=0.8.4",
+#     "vgi-python[http]>=0.8.5",
 #     "saxonche>=13.0",
 # ]
 # ///
@@ -31,11 +31,13 @@ Usage:
 
 from __future__ import annotations
 
+import json
+
 from vgi import Worker
-from vgi.catalog import Catalog, Schema
+from vgi.catalog import Catalog, Schema, Table
 
 from vgi_xslt.scalars import SCALAR_FUNCTIONS
-from vgi_xslt.tables import TABLE_FUNCTIONS
+from vgi_xslt.tables import TABLE_FUNCTIONS, SaxonVersionFunction
 
 _FUNCTIONS: list[type] = [
     *SCALAR_FUNCTIONS,
@@ -77,9 +79,40 @@ _SCHEMA_DESCRIPTION_MD = (
     "`xquery_rows`, `saxon_version`) to explode one document into rows."
 )
 
-_SCHEMA_KEYWORDS = (
-    "xslt, xquery, xpath, xml, transform, shred, query xml, well-formed, saxon, "
-    "xpath_string, xpath_array, xquery_rows, xpath_nodes"
+# VGI138: vgi.keywords must be a JSON array of strings, not a comma-separated string.
+_CATALOG_KEYWORDS = json.dumps(
+    [
+        "xslt",
+        "xquery",
+        "xpath",
+        "xml",
+        "transform",
+        "shred",
+        "query xml",
+        "well-formed",
+        "saxon",
+        "stylesheet",
+        "flwor",
+        "xml processing",
+    ]
+)
+
+_SCHEMA_KEYWORDS = json.dumps(
+    [
+        "xslt",
+        "xquery",
+        "xpath",
+        "xml",
+        "transform",
+        "shred",
+        "query xml",
+        "well-formed",
+        "saxon",
+        "xpath_string",
+        "xpath_array",
+        "xquery_rows",
+        "xpath_nodes",
+    ]
 )
 
 _SCHEMA_EXAMPLE_QUERIES = (
@@ -101,6 +134,55 @@ _PROVENANCE_TAGS = {
     "vgi.support_policy_url": "https://github.com/Query-farm/vgi-xslt/blob/main/README.md",
 }
 
+# Discovery/description tags for the `saxon_version` table (VGI311 exposes the
+# parameterless `saxon_version` table function as a table). Tables need the same
+# tag set as functions: title, doc_llm, doc_md, a classifying tag, keywords, and
+# example queries.
+_SAXON_VERSION_TABLE_TAGS = {
+    "vgi.title": "Saxon Version Table",
+    "vgi.keywords": json.dumps(
+        ["saxon", "version", "discovery", "diagnostics", "engine", "info", "smoke test", "xslt"]
+    ),
+    # VGI123 classifying tags use BARE keys (not vgi.-namespaced).
+    "domain": "xml",
+    "category": "xml-processing",
+    "topic": "xslt-xquery-xpath",
+    "vgi.doc_llm": (
+        "## saxon_version (table)\n\n"
+        "A single-row table exposing the **SaxonC version string** that backs this worker's "
+        "XSLT/XQuery/XPath engine.\n\n"
+        "**When to use:** discovery and diagnostics — `SELECT * FROM xslt.main.saxon_version` "
+        "confirms the worker is reachable and reveals which SaxonC-HE build is in use before "
+        "relying on version-specific XSLT 3.0 / XQuery 3.1 behavior.\n\n"
+        "**Columns:** `version` (VARCHAR) — the SaxonC version string.\n\n"
+        "**Behavior:** always exactly one row; no inputs, so it is a safe smoke-test of the worker."
+    ),
+    "vgi.doc_md": (
+        "# saxon_version\n\n"
+        "Single-row table with the SaxonC version string backing the worker.\n\n"
+        "## Usage\n\n"
+        "```sql\n"
+        "SELECT * FROM xslt.main.saxon_version;\n"
+        "```\n\n"
+        "## Notes\n\n"
+        "- Always one row; no arguments.\n"
+        "- Handy as a connectivity/version smoke-test."
+    ),
+    # VGI501/VGI502 example queries for the table: a JSON list of {description, sql}.
+    "vgi.example_queries": json.dumps(
+        [
+            {
+                "description": "Read just the SaxonC version string backing the worker.",
+                "sql": "SELECT version FROM xslt.main.saxon_version;",
+            },
+            {
+                "description": "Check whether the worker is running a SaxonC 13.x build.",
+                "sql": "SELECT version, version LIKE '13.%' AS is_saxon_13 FROM xslt.main.saxon_version;",
+            },
+        ]
+    ),
+}
+
 _XSLT_CATALOG = Catalog(
     name="xslt",
     default_schema="main",
@@ -108,10 +190,7 @@ _XSLT_CATALOG = Catalog(
     source_url="https://github.com/Query-farm/vgi-xslt",
     tags={
         "vgi.title": "XSLT, XQuery & XPath for XML",
-        "vgi.keywords": (
-            "xslt, xquery, xpath, xml, transform, shred, query xml, well-formed, "
-            "saxon, stylesheet, flwor, xml processing"
-        ),
+        "vgi.keywords": _CATALOG_KEYWORDS,
         "vgi.doc_llm": _CATALOG_DESCRIPTION_LLM,
         "vgi.doc_md": _CATALOG_DESCRIPTION_MD,
         **_PROVENANCE_TAGS,
@@ -127,13 +206,29 @@ _XSLT_CATALOG = Catalog(
                 "domain": "xml",
                 "category": "xml-processing",
                 "topic": "xslt-xquery-xpath",
-                "vgi.source_url": "https://github.com/Query-farm/vgi-xslt/blob/main/xslt_worker.py",
+                # VGI139: vgi.source_url belongs only on the catalog object, not per-schema.
                 "vgi.doc_llm": _SCHEMA_DESCRIPTION_LLM,
                 "vgi.doc_md": _SCHEMA_DESCRIPTION_MD,
                 # VGI506 representative example queries for the schema.
                 "vgi.example_queries": _SCHEMA_EXAMPLE_QUERIES,
             },
             functions=list(_FUNCTIONS),
+            # VGI311: a parameterless table function is also exposed as a table so
+            # `SELECT * FROM xslt.main.saxon_version` resolves directly. The schema
+            # is fixed (@bind_fixed_schema) and the function takes no arguments, so
+            # the bind result is safe to inline for the catalog cache lifetime.
+            tables=[
+                Table(
+                    name="saxon_version",
+                    function=SaxonVersionFunction,
+                    inline_bind=True,
+                    comment="The SaxonC version string backing this worker (single row).",
+                    # The version string uniquely identifies the single row (VGI807).
+                    primary_key=(("version",),),
+                    not_null=("version",),
+                    tags=_SAXON_VERSION_TABLE_TAGS,
+                ),
+            ],
         ),
     ],
 )
