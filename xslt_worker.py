@@ -57,6 +57,7 @@ _CATALOG_DESCRIPTION_LLM = (
 
 _CATALOG_DESCRIPTION_MD = (
     "# XSLT, XQuery & XPath for XML in SQL\n\n"
+    "![Saxonica SaxonC-HE logo](https://avatars.githubusercontent.com/u/3630933?s=240&v=4)\n\n"
     "Transform, query, and shred XML directly in DuckDB SQL with full **XSLT 3.0**, "
     "**XQuery 3.1**, and **XPath 3.1** support, powered by the production-grade Saxon "
     "processor.\n\n"
