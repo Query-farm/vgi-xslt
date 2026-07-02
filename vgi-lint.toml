@@ -1,0 +1,10 @@
+# vgi-lint-check configuration for the vgi-xslt worker.
+#
+# The first Saxon operation in a worker process boots SaxonC-HE's native
+# (GraalVM) runtime -- a one-time ~20-30s cost that the first executable example
+# necessarily pays (the processor is created lazily on first use, by design).
+# Raise the slow-example threshold so VGI908 does not flag that unavoidable cold
+# start; every subsequent example/transform is fast (compiled artifacts are
+# cached for the process lifetime).
+[tool.vgi-lint-check.execution]
+slow_seconds = 60

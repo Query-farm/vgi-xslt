@@ -95,6 +95,7 @@ class XsltFunction(ScalarFunction):
         tags = {
             **object_tags(
                 title="Apply XSLT Stylesheet",
+                category="transform",
                 doc_llm=(
                     "## xslt\n\n"
                     "Apply an **XSLT 3.0** stylesheet to an XML document and return the "
@@ -166,6 +167,7 @@ class XPathStringFunction(ScalarFunction):
         categories = ["xslt", "xpath"]
         tags = object_tags(
             title="XPath String Value",
+            category="query",
             doc_llm=(
                 "## xpath_string\n\n"
                 "Evaluate an **XPath 3.1** expression against an XML document and return the "
@@ -231,6 +233,7 @@ class XPathBooleanFunction(ScalarFunction):
         categories = ["xslt", "xpath"]
         tags = object_tags(
             title="XPath Boolean Test",
+            category="query",
             doc_llm=(
                 "## xpath_boolean\n\n"
                 "Evaluate an **XPath 3.1** expression against an XML document and return its "
@@ -298,6 +301,7 @@ class XPathNumberFunction(ScalarFunction):
         categories = ["xslt", "xpath"]
         tags = object_tags(
             title="XPath Numeric Value",
+            category="query",
             doc_llm=(
                 "## xpath_number\n\n"
                 "Evaluate an **XPath 3.1** expression against an XML document and return its "
@@ -370,6 +374,7 @@ class XPathArrayFunction(ScalarFunction):
         categories = ["xslt", "xpath"]
         tags = object_tags(
             title="XPath Match Array",
+            category="shred",
             doc_llm=(
                 "## xpath_array\n\n"
                 "Evaluate an **XPath 3.1** expression against an XML document and return the "
@@ -439,6 +444,7 @@ class XQueryFunction(ScalarFunction):
         categories = ["xslt", "xquery"]
         tags = object_tags(
             title="Run XQuery Query",
+            category="query",
             doc_llm=(
                 "## xquery\n\n"
                 "Run an **XQuery 3.1** query against an XML document (bound as the context item) "
@@ -507,6 +513,7 @@ class IsWellFormedFunction(ScalarFunction):
         categories = ["xslt", "xml"]
         tags = object_tags(
             title="Check XML Well-Formedness",
+            category="validate",
             doc_llm=(
                 "## is_well_formed\n\n"
                 "Test whether a string is **well-formed XML** — returns `true` if it parses, "

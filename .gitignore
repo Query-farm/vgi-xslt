@@ -9,3 +9,5 @@ vendor/
 duckdb_unittest_tempdir/
 *.coverage
 .coverage
+# vgi-lint --execute --ai review/simulate caches
+.vgi-*-cache.json

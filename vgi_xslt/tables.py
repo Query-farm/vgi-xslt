@@ -80,6 +80,7 @@ class XPathNodesFunction(TableFunctionGenerator[_DocExprArgs]):
         tags = {
             **object_tags(
                 title="XPath Nodes Table",
+                category="shred",
                 doc_llm=(
                     "## xpath_nodes\n\n"
                     "Explode a single XML document into rows: emit **one `(seq, value)` row per "
@@ -166,6 +167,7 @@ class XQueryRowsFunction(TableFunctionGenerator[_DocExprArgs]):
         tags = {
             **object_tags(
                 title="XQuery Rows Table",
+                category="shred",
                 doc_llm=(
                     "## xquery_rows\n\n"
                     "Run an **XQuery 3.1** query against one document and emit **one `(seq, value)` "
@@ -262,6 +264,7 @@ class SaxonVersionFunction(TableFunctionGenerator[_NoArgs]):
         tags = {
             **object_tags(
                 title="Saxon Version Info",
+                category="diagnostics",
                 doc_llm=(
                     "## saxon_version\n\n"
                     "Return a **single row** carrying the SaxonC version string that backs this "
