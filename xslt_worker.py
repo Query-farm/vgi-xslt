@@ -1,7 +1,7 @@
 # /// script
 # requires-python = ">=3.13"
 # dependencies = [
-#     "vgi-python[http]>=0.8.5",
+#     "vgi-python[http]>=0.16.0",
 #     "saxonche>=13.0",
 # ]
 # ///
@@ -26,7 +26,6 @@ Usage:
     SELECT xslt.xquery('<r><i>a</i><i>b</i></r>', 'string-join(//i, ",")');
     SELECT xslt.is_well_formed('<a></a>');                      -- true
     SELECT * FROM xslt.xpath_nodes('<r><i>a</i><i>b</i></r>', '//i');
-    SELECT * FROM xslt.saxon_version();
 """
 
 from __future__ import annotations
@@ -37,7 +36,7 @@ from vgi import Worker
 from vgi.catalog import Catalog, Schema, Table
 
 from vgi_xslt.scalars import SCALAR_FUNCTIONS
-from vgi_xslt.tables import TABLE_FUNCTIONS, SaxonVersionFunction
+from vgi_xslt.tables import TABLE_FUNCTIONS, SaxonInfoFunction
 
 _FUNCTIONS: list[type] = [
     *SCALAR_FUNCTIONS,
@@ -81,7 +80,7 @@ _CATALOG_DESCRIPTION_MD = (
     "## When to use it\n\n"
     "Reach for this worker whenever XML lands in a DuckDB column and you need to read a value out "
     "of it, transform it into another shape, or normalize its repeated structure into rows for "
-    "downstream SQL. List the schema to discover the available functions and their signatures.\n\n"
+    "downstream SQL.\n\n"
     "## Under the hood\n\n"
     "The worker is backed by [SaxonC-HE](https://www.saxonica.com/), the free Home Edition of "
     "[Saxonica](https://www.saxonica.com/)'s Saxon processor -- the reference implementation for "
@@ -107,8 +106,7 @@ _SCHEMA_DESCRIPTION_LLM = (
     "to a single value (text, boolean, or number), and shred a document into many rows -- either "
     "per-row via an array you UNNEST, or as a set-returning table function. A well-formedness "
     "check lets you filter malformed input first. Per-row scalars pass NULLs through; malformed "
-    "XML or expressions raise a clean error. List the schema to see each function and its "
-    "signature."
+    "XML or expressions raise a clean error."
 )
 
 _SCHEMA_DESCRIPTION_MD = (
@@ -120,8 +118,7 @@ _SCHEMA_DESCRIPTION_MD = (
     "value.\n"
     "- **Shred** a document into relational rows -- per row via an array you UNNEST, or via a "
     "set-returning table function.\n"
-    "- **Validate** that text is well-formed XML before you process it.\n\n"
-    "List the schema to discover the individual functions, their arguments, and worked examples."
+    "- **Validate** that text is well-formed XML before you process it."
 )
 
 # VGI138: vgi.keywords must be a JSON array of strings, not a comma-separated string.
@@ -160,15 +157,39 @@ _SCHEMA_KEYWORDS = json.dumps(
     ]
 )
 
-_SCHEMA_EXAMPLE_QUERIES = (
-    "SELECT xslt.main.xpath_string('<r><a>x</a></r>', '//a');\n"
-    "SELECT xslt.main.xpath_boolean('<r><a/></r>', 'count(//a) = 1');\n"
-    "SELECT xslt.main.xpath_number('<r><n>42</n></r>', 'number(//n)');\n"
-    "SELECT UNNEST(xslt.main.xpath_array('<r><i>a</i><i>b</i></r>', '//i'));\n"
-    "SELECT xslt.main.xquery('<r><i>a</i><i>b</i></r>', 'string-join(//i, \",\")');\n"
-    "SELECT xslt.main.is_well_formed('<a></a>');\n"
-    "SELECT * FROM xslt.main.xpath_nodes('<r><i>a</i><i>b</i></r>', '//i');\n"
-    "SELECT * FROM xslt.main.saxon_version();"
+# VGI515: schema example queries are a JSON list of {description, sql}, each with
+# a non-empty description; every query projects/filters rather than dumping rows.
+_SCHEMA_EXAMPLE_QUERIES = json.dumps(
+    [
+        {
+            "description": "Pull the string value of an XPath match out of a document.",
+            "sql": "SELECT xslt.main.xpath_string('<r><a>x</a></r>', '//a')",
+        },
+        {
+            "description": "Test an XPath count predicate as a boolean.",
+            "sql": "SELECT xslt.main.xpath_boolean('<r><a/></r>', 'count(//a) = 1')",
+        },
+        {
+            "description": "Read a numeric value out of a document via XPath.",
+            "sql": "SELECT xslt.main.xpath_number('<r><n>42</n></r>', 'number(//n)')",
+        },
+        {
+            "description": "Shred every XPath match into rows with UNNEST.",
+            "sql": "SELECT UNNEST(xslt.main.xpath_array('<r><i>a</i><i>b</i></r>', '//i')) AS item",
+        },
+        {
+            "description": "Join matched values into one string with an XQuery string-join.",
+            "sql": "SELECT xslt.main.xquery('<r><i>a</i><i>b</i></r>', 'string-join(//i, \",\")')",
+        },
+        {
+            "description": "Filter to only well-formed candidate documents.",
+            "sql": "SELECT xslt.main.is_well_formed('<a></a>') AS well_formed",
+        },
+        {
+            "description": "Explode a document into numbered (seq, value) rows in document order.",
+            "sql": "SELECT seq, value FROM xslt.main.xpath_nodes('<r><i>a</i><i>b</i></r>', '//i') ORDER BY seq",
+        },
+    ]
 )
 
 _PROVENANCE_TAGS = {
@@ -201,8 +222,8 @@ _SCHEMA_CATEGORIES = json.dumps(
             "description": "Check whether text parses as well-formed XML.",
         },
         {
-            "name": "diagnostics",
-            "description": "Worker and Saxon engine discovery and version info.",
+            "name": "reference",
+            "description": "Browsable reference data about the Saxon engine and its capabilities.",
         },
     ]
 )
@@ -327,62 +348,64 @@ _AGENT_TEST_TASKS = json.dumps(
             "ignore_column_names": True,
         },
         {
-            "name": "report-engine-version",
+            "name": "engine-supports-xsd-validation",
             "prompt": (
-                "Return the SaxonC engine version string that backs this worker, to confirm the worker is reachable."
+                "Using the worker's engine reference/capabilities table, return whether this "
+                "worker's Saxon engine can perform XSD schema validation (its schema-aware flag)."
             ),
-            "reference_sql": "SELECT version FROM xslt.main.saxon_version()",
+            "reference_sql": "SELECT schema_aware FROM xslt.main.saxon_info",
             "ignore_column_names": True,
         },
     ]
 )
 
-# Discovery/description tags for the `saxon_version` table (VGI311 exposes the
-# parameterless `saxon_version` table function as a table). Tables need the same
-# tag set as functions: title, doc_llm, doc_md, a classifying tag, keywords, and
-# example queries.
-_SAXON_VERSION_TABLE_TAGS = {
-    "vgi.title": "Saxon Version Table",
+# Discovery/description tags for the browsable `saxon_info` capabilities table
+# (VGI311 exposes the parameterless `saxon_info` table function as a table).
+# Tables carry the same tag set as functions: title, doc_llm, doc_md, classifying
+# tags, keywords, and example queries.
+_SAXON_INFO_TABLE_TAGS = {
+    "vgi.title": "Saxon Engine Capabilities Table",
     "vgi.keywords": json.dumps(
-        ["saxon", "version", "discovery", "diagnostics", "engine", "info", "smoke test", "xslt"]
+        ["saxon", "capabilities", "engine", "version", "edition", "schema aware", "reference", "xslt"]
     ),
     # VGI123 classifying tags use BARE keys (not vgi.-namespaced).
     "domain": "xml",
     "category": "xml-processing",
     "topic": "xslt-xquery-xpath",
     # VGI413 category (names one of the schema's vgi.categories entries).
-    "vgi.category": "diagnostics",
+    "vgi.category": "reference",
     "vgi.doc_llm": (
-        "## saxon_version (table)\n\n"
-        "A single-row table exposing the **SaxonC version string** that backs this worker's "
-        "XSLT/XQuery/XPath engine.\n\n"
-        "**When to use:** discovery and diagnostics — confirm the worker is reachable and reveal "
-        "which SaxonC-HE build is in use before relying on version-specific XSLT 3.0 / "
-        "XQuery 3.1 behavior.\n\n"
-        "**Columns:** `version` (VARCHAR) — the SaxonC version string.\n\n"
-        "**Behavior:** always exactly one row; no inputs, so it is a safe smoke-test of the worker."
+        "## saxon_info (table)\n\n"
+        "A single-row, directly-browsable table describing the SaxonC engine bundled with this "
+        "worker — its version and edition, the XSLT/XQuery/XPath language levels it implements, "
+        "and whether it is schema-aware.\n\n"
+        "**When to use:** learn the engine's capabilities before relying on them. The "
+        "`schema_aware` column is the key signal: it is always false on the Home Edition, so "
+        "there is no XSD validation. The table has no arguments and a single row of engine "
+        "facts, so it is directly browsable.\n\n"
+        "**Columns:** `version`, `edition`, `xslt_version`, `xquery_version`, `xpath_version` "
+        "(all `VARCHAR`) and `schema_aware` (`BOOLEAN`)."
     ),
     "vgi.doc_md": (
-        "# saxon_version\n\n"
-        "Single-row table with the SaxonC version string backing the worker.\n\n"
-        "## Usage\n\n"
-        "```sql\n"
-        "SELECT * FROM xslt.main.saxon_version;\n"
-        "```\n\n"
+        "# saxon_info\n\n"
+        "Single-row reference table describing the bundled SaxonC engine and its capabilities.\n\n"
+        "## Columns\n\n"
+        "- `version` — SaxonC version string.\n"
+        "- `edition` — Saxon edition (HE = free Home Edition).\n"
+        "- `xslt_version` / `xquery_version` / `xpath_version` — implemented language levels.\n"
+        "- `schema_aware` — whether XSD validation is available (always false on HE).\n\n"
         "## Notes\n\n"
-        "- Always one row; no arguments.\n"
-        "- Handy as a connectivity/version smoke-test."
+        "- Always one row; no arguments, so it is directly browsable."
     ),
-    # VGI501/VGI502 example queries for the table: a JSON list of {description, sql}.
     "vgi.example_queries": json.dumps(
         [
             {
-                "description": "Read just the SaxonC version string backing the worker.",
-                "sql": "SELECT version FROM xslt.main.saxon_version;",
+                "description": "Read the engine version and whether XSD validation is available.",
+                "sql": "SELECT version, schema_aware FROM xslt.main.saxon_info",
             },
             {
-                "description": "Check whether the worker is running a SaxonC 13.x build.",
-                "sql": "SELECT version, version LIKE '13.%' AS is_saxon_13 FROM xslt.main.saxon_version;",
+                "description": "Confirm the XSLT and XQuery language levels the engine implements.",
+                "sql": "SELECT xslt_version, xquery_version FROM xslt.main.saxon_info",
             },
         ]
     ),
@@ -422,20 +445,28 @@ _XSLT_CATALOG = Catalog(
                 "vgi.example_queries": _SCHEMA_EXAMPLE_QUERIES,
             },
             functions=list(_FUNCTIONS),
-            # VGI311: a parameterless table function is also exposed as a table so
-            # `SELECT * FROM xslt.main.saxon_version` resolves directly. The schema
-            # is fixed (@bind_fixed_schema) and the function takes no arguments, so
-            # the bind result is safe to inline for the catalog cache lifetime.
+            # VGI311 / VGI146: the parameterless `saxon_info` table function is also
+            # exposed as a directly-browsable table so an agent can SELECT the engine's
+            # capabilities without knowing any arguments. Its schema is fixed
+            # (@bind_fixed_schema) and it takes no arguments, so the bind result is
+            # safe to inline for the catalog cache lifetime.
             tables=[
                 Table(
-                    name="saxon_version",
-                    function=SaxonVersionFunction,
+                    name="saxon_info",
+                    function=SaxonInfoFunction,
                     inline_bind=True,
-                    comment="The SaxonC version string backing this worker (single row).",
+                    comment="One row describing the bundled SaxonC engine and its capabilities.",
                     # The version string uniquely identifies the single row (VGI807).
                     primary_key=(("version",),),
-                    not_null=("version",),
-                    tags=_SAXON_VERSION_TABLE_TAGS,
+                    not_null=(
+                        "version",
+                        "edition",
+                        "xslt_version",
+                        "xquery_version",
+                        "xpath_version",
+                        "schema_aware",
+                    ),
+                    tags=_SAXON_INFO_TABLE_TAGS,
                 ),
             ],
         ),

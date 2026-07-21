@@ -79,12 +79,3 @@ query I
 SELECT xslt.is_well_formed('<a><b></a>');
 ----
 false
-
-# ---------------------------------------------------------------------------
-# saxon_version() — discovery
-# ---------------------------------------------------------------------------
-
-query I
-SELECT version LIKE '%Saxon%' FROM xslt.saxon_version();
-----
-true

@@ -95,8 +95,12 @@ jobs:
       - name: vgi-lint
         uses: Query-farm/vgi-lint-check@v1
         with:
-          version: "0.37.0"
-          location: "uv run --python 3.13 xslt_worker.py"
+          version: "0.73.0"
+          # Drive the worker through the venv Python built by `uv sync` above, not
+          # `uv run xslt_worker.py`: the latter resolves the script's PEP 723 inline
+          # deps into a separate cached env that can pin a stale vgi-python and emit
+          # an out-of-date catalog schema.
+          location: ".venv/bin/python xslt_worker.py"
           fail-on: info
 
   # Resolve the latest published haybarn release once, so the whole matrix tests
@@ -163,7 +167,11 @@ jobs:
           UNITTEST="$PWD/$(find hb -name 'haybarn-unittest' -type f | head -1)"
           chmod +x "$UNITTEST"
           echo "HAYBARN_UNITTEST=$UNITTEST" >> "$GITHUB_ENV"
-          echo "WORKER_CMD=uv run --python 3.13 $PWD/xslt_worker.py" >> "$GITHUB_ENV"
+          # Drive the worker through the venv Python built by `uv sync` above
+          # (absolute paths: run-integration.sh cd's into a staging dir), not
+          # `uv run`, so the ATTACH path uses the installed SDK, not the script's
+          # separately-cached PEP 723 env.
+          echo "WORKER_CMD=$PWD/.venv/bin/python $PWD/xslt_worker.py" >> "$GITHUB_ENV"
 
       - name: Run extension integration suite (${{ matrix.transport }})
         run: ci/run-integration.sh

@@ -30,7 +30,7 @@ classifiers = [
 ]
 requires-python = ">=3.13"
 dependencies = [
-    "vgi-python>=0.9.0",
+    "vgi-python>=0.16.0",
     "saxonche>=13.0",
     "pyarrow",
 ]
@@ -40,7 +40,7 @@ dependencies = [
 # addition to stdio. That path needs vgi-python's `http` extra (waitress).
 # CI's http transport leg installs this via `uv sync --extra http`.
 http = [
-    "vgi-python[http]>=0.9.0",
+    "vgi-python[http]>=0.16.0",
 ]
 dev = [
     "pytest>=8",
@@ -92,6 +92,8 @@ warn_return_any = true
 warn_unused_ignores = true
 
 [[tool.mypy.overrides]]
-# Genuinely untyped third-party library (no stubs published).
-module = ["saxonche.*"]
+# Genuinely untyped third-party libraries (no stubs / no py.typed marker
+# published). pyarrow shipped a py.typed marker through 24.x but dropped it in
+# 25.0.0, so mypy strict now treats it as untyped.
+module = ["saxonche.*", "pyarrow.*"]
 ignore_missing_imports = true

@@ -5,7 +5,6 @@ These expand a single document into **many rows**, so they are exposed as
 
     SELECT * FROM xslt.xpath_nodes('<r><i>a</i><i>b</i></r>', '//i');
     SELECT * FROM xslt.xquery_rows('<r><i>1</i><i>2</i></r>', 'for $x in //i return $x*2');
-    SELECT * FROM xslt.saxon_version();
 
 For shredding *a column of documents* (one expression applied per row) use the
 ``xpath_array`` scalar with ``UNNEST`` instead -- a table function binds a single
@@ -15,6 +14,7 @@ document with a sequence number per match.
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from typing import Annotated, ClassVar
 
@@ -35,17 +35,22 @@ from . import engine
 from .meta import object_tags
 from .schema_utils import field
 
-_SEQ_VALUE_COLUMNS_MD = (
-    "| Column | Type | Description |\n"
-    "| --- | --- | --- |\n"
-    "| `seq` | BIGINT | 1-based position of the match in document/sequence order |\n"
-    "| `value` | VARCHAR | String value of the matched node/item |"
-)
-
-_VERSION_COLUMNS_MD = (
-    "| Column | Type | Description |\n"
-    "| --- | --- | --- |\n"
-    "| `version` | VARCHAR | SaxonC version string backing this worker |"
+# VGI307: a table function with no backing table must declare its result schema
+# as a JSON array of {name, type, description}. Both shredding table functions
+# return the same fixed (seq, value) shape.
+_SEQ_VALUE_COLUMNS_SCHEMA = json.dumps(
+    [
+        {
+            "name": "seq",
+            "type": "BIGINT",
+            "description": "1-based position of the match in document/sequence order.",
+        },
+        {
+            "name": "value",
+            "type": "VARCHAR",
+            "description": "String value of the matched node/item.",
+        },
+    ]
 )
 
 _SEQ_VALUE_SCHEMA = pa.schema(
@@ -90,8 +95,8 @@ class XPathNodesFunction(TableFunctionGenerator[_DocExprArgs]):
                     "For shredding a *column* of documents instead, use the `xpath_array` scalar "
                     "with `UNNEST`.\n\n"
                     "**Inputs:** `xml` (the document) and `expr` (an XPath 3.1 expression). Both "
-                    "VARCHAR; table-function named-argument syntax (`name := value`) is supported.\n\n"
-                    "**Output columns:** `seq` (BIGINT, 1-based position) and `value` (VARCHAR, the "
+                    "`VARCHAR`; table-function named-argument syntax (`name := value`) is supported.\n\n"
+                    "**Output columns:** `seq` (`BIGINT`, 1-based position) and `value` (`VARCHAR`, the "
                     "match's string value).\n\n"
                     "**Behavior & edge cases:** no matches -> zero rows. Malformed XML or XPath "
                     "raises a clean DuckDB error."
@@ -100,9 +105,8 @@ class XPathNodesFunction(TableFunctionGenerator[_DocExprArgs]):
                     "# xpath_nodes\n\n"
                     "Table function: one `(seq, value)` row per XPath 3.1 match in one document.\n\n"
                     "## Usage\n\n"
-                    "```sql\n"
-                    "SELECT * FROM xslt.main.xpath_nodes('<r><i>a</i><i>b</i></r>', '//i');\n"
-                    "```\n\n"
+                    "Call `xslt.main.xpath_nodes(xml, expr)` in a `FROM` clause to expand each "
+                    "match into a numbered `(seq, value)` row.\n\n"
                     "## Notes\n\n"
                     "- Binds a single constant document; use `xpath_array` + `UNNEST` per row.\n"
                     "- `seq` is the 1-based document-order position of each match.\n"
@@ -119,13 +123,19 @@ class XPathNodesFunction(TableFunctionGenerator[_DocExprArgs]):
                     "query xml",
                     "saxon",
                 ],
+                examples=[
+                    (
+                        "Number each XPath match and return it in document order.",
+                        "SELECT seq, value FROM xslt.main.xpath_nodes('<r><i>a</i><i>b</i></r>', '//i') ORDER BY seq",
+                    ),
+                ],
             ),
-            "vgi.result_columns_md": _SEQ_VALUE_COLUMNS_MD,
+            "vgi.result_columns_schema": _SEQ_VALUE_COLUMNS_SCHEMA,
         }
         examples = [
             FunctionExample(
-                sql="SELECT * FROM xslt.main.xpath_nodes('<r><i>a</i><i>b</i></r>', '//i')",
-                description="Explode every matching node into a row",
+                sql="SELECT seq, value FROM xslt.main.xpath_nodes('<r><i>a</i><i>b</i></r>', '//i') ORDER BY seq",
+                description="Number each XPath match and return it in document order",
             ),
         ]
 
@@ -177,8 +187,8 @@ class XQueryRowsFunction(TableFunctionGenerator[_DocExprArgs]):
                     "filter, or aggregate in SQL. Use the `xquery` scalar instead when you want the "
                     "whole result serialized into one value.\n\n"
                     "**Inputs:** `xml` (the document, bound as the context item) and `expr` (the "
-                    "XQuery 3.1 source). Both VARCHAR; named-argument syntax supported.\n\n"
-                    "**Output columns:** `seq` (BIGINT, 1-based position) and `value` (VARCHAR, the "
+                    "XQuery 3.1 source). Both `VARCHAR`; named-argument syntax supported.\n\n"
+                    "**Output columns:** `seq` (`BIGINT`, 1-based position) and `value` (`VARCHAR`, the "
                     "item's string value).\n\n"
                     "**Behavior & edge cases:** an empty result sequence -> zero rows. Malformed "
                     "XML or a malformed query raises a clean DuckDB error."
@@ -188,10 +198,8 @@ class XQueryRowsFunction(TableFunctionGenerator[_DocExprArgs]):
                     "Table function: one `(seq, value)` row per item in an XQuery 3.1 result "
                     "sequence.\n\n"
                     "## Usage\n\n"
-                    "```sql\n"
-                    "SELECT * FROM xslt.main.xquery_rows('<r><i>1</i><i>2</i></r>', "
-                    "'for $x in //i return $x*2');\n"
-                    "```\n\n"
+                    "Call `xslt.main.xquery_rows(xml, expr)` in a `FROM` clause to expand each "
+                    "item of the result sequence into a numbered `(seq, value)` row.\n\n"
                     "## Notes\n\n"
                     "- One row per sequence item; `seq` is the 1-based position.\n"
                     "- Use the `xquery` scalar for a single serialized result.\n"
@@ -208,12 +216,20 @@ class XQueryRowsFunction(TableFunctionGenerator[_DocExprArgs]):
                     "query xml",
                     "saxon",
                 ],
+                examples=[
+                    (
+                        "Explode an XQuery FLWOR result into numbered rows.",
+                        "SELECT seq, value FROM xslt.main.xquery_rows("
+                        "'<r><i>1</i><i>2</i></r>', 'for $x in //i return $x*2') ORDER BY seq",
+                    ),
+                ],
             ),
-            "vgi.result_columns_md": _SEQ_VALUE_COLUMNS_MD,
+            "vgi.result_columns_schema": _SEQ_VALUE_COLUMNS_SCHEMA,
         }
         examples = [
             FunctionExample(
-                sql="SELECT * FROM xslt.main.xquery_rows('<r><i>1</i><i>2</i></r>', 'for $x in //i return $x*2')",
+                sql="SELECT seq, value FROM xslt.main.xquery_rows("
+                "'<r><i>1</i><i>2</i></r>', 'for $x in //i return $x*2') ORDER BY seq",
                 description="Explode an XQuery FLWOR result into rows",
             ),
         ]
@@ -242,70 +258,122 @@ class XQueryRowsFunction(TableFunctionGenerator[_DocExprArgs]):
 
 @dataclass(kw_only=True)
 class _NoArgs:
-    """A discovery table function that takes no arguments."""
+    """A reference table function that takes no arguments."""
 
 
-_VERSION_SCHEMA = pa.schema([field("version", pa.string(), "SaxonC version string.", nullable=False)])
+# The XSLT/XQuery/XPath language levels and edition are fixed by the bundled
+# SaxonC-HE build; only the version string is read at runtime.
+_SAXON_INFO_SCHEMA = pa.schema(
+    [
+        field("version", pa.string(), "SaxonC version string of the bundled engine.", nullable=False),
+        field(
+            "edition",
+            pa.string(),
+            "Saxon edition (HE = Home Edition, the free, non-schema-aware build).",
+            nullable=False,
+        ),
+        field("xslt_version", pa.string(), "XSLT language level the engine implements.", nullable=False),
+        field("xquery_version", pa.string(), "XQuery language level the engine implements.", nullable=False),
+        field("xpath_version", pa.string(), "XPath language level the engine implements.", nullable=False),
+        field(
+            "schema_aware",
+            pa.bool_(),
+            "Whether the engine can do XSD validation / schema-aware processing (always false on HE).",
+            nullable=False,
+        ),
+    ]
+)
+
+# VGI307 result schema for the browsable capabilities table.
+_SAXON_INFO_COLUMNS_SCHEMA = json.dumps(
+    [
+        {"name": "version", "type": "VARCHAR", "description": "SaxonC version string of the bundled engine."},
+        {
+            "name": "edition",
+            "type": "VARCHAR",
+            "description": "Saxon edition (HE = Home Edition, the free, non-schema-aware build).",
+        },
+        {"name": "xslt_version", "type": "VARCHAR", "description": "XSLT language level the engine implements."},
+        {"name": "xquery_version", "type": "VARCHAR", "description": "XQuery language level the engine implements."},
+        {"name": "xpath_version", "type": "VARCHAR", "description": "XPath language level the engine implements."},
+        {
+            "name": "schema_aware",
+            "type": "BOOLEAN",
+            "description": "Whether the engine can do XSD validation / schema-aware processing (always false on HE).",
+        },
+    ]
+)
 
 
 @init_single_worker
 @bind_fixed_schema
-class SaxonVersionFunction(TableFunctionGenerator[_NoArgs]):
-    """A single row carrying the SaxonC version string (discovery)."""
+class SaxonInfoFunction(TableFunctionGenerator[_NoArgs]):
+    """A single row describing the bundled SaxonC engine and its capabilities."""
 
-    FIXED_SCHEMA: ClassVar[pa.Schema] = _VERSION_SCHEMA
+    FIXED_SCHEMA: ClassVar[pa.Schema] = _SAXON_INFO_SCHEMA
 
     class Meta:
         """Function metadata."""
 
-        name = "saxon_version"
-        description = "The SaxonC version string backing this worker (single row)"
-        categories = ["xslt", "discovery"]
+        name = "saxon_info"
+        description = "One row describing the bundled SaxonC engine: version, edition, and language levels"
+        categories = ["xslt", "reference"]
         tags = {
             **object_tags(
-                title="Saxon Version Info",
-                category="diagnostics",
+                title="Saxon Engine Capabilities",
+                category="reference",
                 doc_llm=(
-                    "## saxon_version\n\n"
-                    "Return a **single row** carrying the SaxonC version string that backs this "
-                    "worker's XSLT/XQuery/XPath engine.\n\n"
-                    "**When to use:** discovery and diagnostics — confirm the worker is reachable "
-                    "and learn which SaxonC-HE build is in use before relying on version-specific "
-                    "XSLT 3.0 / XQuery 3.1 behavior.\n\n"
+                    "## saxon_info\n\n"
+                    "A **single-row reference table** describing the SaxonC engine bundled with "
+                    "this worker: its version, edition, and the XSLT/XQuery/XPath language levels "
+                    "it implements.\n\n"
+                    "**When to use:** discover what the engine can do before you rely on it — most "
+                    "importantly the `schema_aware` flag (always false on the Home Edition, so "
+                    "there is no XSD validation) and the language levels behind `xslt`, `xquery`, "
+                    "and the `xpath_*` functions. Because it takes no arguments, it is directly "
+                    "browsable — the whole table is a single row of engine facts.\n\n"
                     "**Inputs:** none.\n\n"
-                    "**Output columns:** `version` (VARCHAR) — the SaxonC version string.\n\n"
-                    "**Behavior & edge cases:** always returns exactly one row; requires no XML "
-                    "input, so it is a safe smoke-test of the worker."
+                    "**Output columns:** `version`, `edition`, `xslt_version`, `xquery_version`, "
+                    "`xpath_version` (all `VARCHAR`) and `schema_aware` (`BOOLEAN`).\n\n"
+                    "**Behavior & edge cases:** always exactly one row; the language levels and "
+                    "edition are constant, only `version` is read from the running build."
                 ),
                 doc_md=(
-                    "# saxon_version\n\n"
-                    "Table function: a single row with the SaxonC version string backing the "
-                    "worker.\n\n"
+                    "# saxon_info\n\n"
+                    "A single-row reference table describing the bundled SaxonC engine and the "
+                    "capabilities it exposes to the rest of this catalog.\n\n"
                     "## Usage\n\n"
-                    "```sql\n"
-                    "SELECT * FROM xslt.main.saxon_version();\n"
-                    "```\n\n"
+                    "The table has no arguments and a single row: read the `version`, `edition`, "
+                    "and `xslt_version` / `xquery_version` / `xpath_version` columns for the engine "
+                    "facts, and the `schema_aware` column to learn whether XSD validation is "
+                    "available.\n\n"
                     "## Notes\n\n"
-                    "- Always one row; no arguments.\n"
-                    "- Handy as a connectivity/version smoke-test."
+                    "- Always one row; no arguments, so it is directly browsable.\n"
+                    "- `schema_aware` is always false on SaxonC-HE (no XSD validation)."
                 ),
                 keywords=[
                     "saxon",
-                    "version",
-                    "discovery",
-                    "diagnostics",
+                    "capabilities",
                     "engine",
-                    "info",
-                    "smoke test",
+                    "version",
+                    "edition",
+                    "schema aware",
+                    "reference",
                     "xslt",
                 ],
+                examples=[
+                    (
+                        "Read the engine version and whether XSD validation is available.",
+                        "SELECT version, schema_aware FROM xslt.main.saxon_info",
+                    ),
+                ],
             ),
-            "vgi.result_columns_md": _VERSION_COLUMNS_MD,
+            "vgi.result_columns_schema": _SAXON_INFO_COLUMNS_SCHEMA,
         }
         examples = [
             FunctionExample(
-                sql="SELECT * FROM xslt.main.saxon_version()",
-                description="Discover the Saxon version",
+                sql="SELECT version, schema_aware FROM xslt.main.saxon_info",
+                description="Read the engine version and whether XSD validation is available",
             ),
         ]
 
@@ -316,10 +384,17 @@ class SaxonVersionFunction(TableFunctionGenerator[_NoArgs]):
 
     @classmethod
     def process(cls, params: ProcessParams[_NoArgs], state: None, out: OutputCollector) -> None:
-        """Emit the output rows produced by this invocation."""
+        """Emit the single capabilities row."""
         out.emit(
             pa.RecordBatch.from_pydict(
-                {"version": [engine.version()]},
+                {
+                    "version": [engine.version()],
+                    "edition": ["Home Edition (HE)"],
+                    "xslt_version": ["3.0"],
+                    "xquery_version": ["3.1"],
+                    "xpath_version": ["3.1"],
+                    "schema_aware": [False],
+                },
                 schema=params.output_schema,
             )
         )
@@ -329,5 +404,5 @@ class SaxonVersionFunction(TableFunctionGenerator[_NoArgs]):
 TABLE_FUNCTIONS: list[type] = [
     XPathNodesFunction,
     XQueryRowsFunction,
-    SaxonVersionFunction,
+    SaxonInfoFunction,
 ]

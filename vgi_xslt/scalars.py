@@ -22,8 +22,8 @@ Invalid input -- malformed XML, a bad stylesheet/query, or a bad XPath
 expression -- raises (surfaced as a clean DuckDB error), **except**
 ``is_well_formed``, which reports malformed XML as ``false`` rather than raising.
 
-Set-returning functions (``xpath_nodes``, ``xquery_rows``, ``saxon_version``)
-live in :mod:`vgi_xslt.tables`.
+Set-returning functions (``xpath_nodes``, ``xquery_rows``) live in
+:mod:`vgi_xslt.tables`.
 """
 
 from __future__ import annotations
@@ -47,19 +47,17 @@ _XSLT_STYLESHEET = (
     '<xsl:template match="/"><out><xsl:value-of select="//n"/></out></xsl:template>'
     "</xsl:stylesheet>"
 )
+_XSLT_EXAMPLE_SQL = f"SELECT xslt.main.xslt('<doc><n>hi</n></doc>', '{_XSLT_STYLESHEET}')"
+_XSLT_EXAMPLE_DESC = "Apply an XSLT 3.0 stylesheet, lifting an inner element value into a new wrapper element."
+
+# VGI509: at least one object ships a guaranteed-runnable executable example so
+# an agent has a checked, self-contained query to learn from.
 _XSLT_EXECUTABLE_EXAMPLES = json.dumps(
     [
         {
-            "description": (
-                "Transform a document, lifting an inner element value into a new "
-                "wrapper element via an XSLT 3.0 stylesheet."
-            ),
-            "sql": f"SELECT xslt.main.xslt('<doc><n>hi</n></doc>', '{_XSLT_STYLESHEET}')",
-        },
-        {
-            "description": "Pull the string value of the first XPath 3.1 match from a document.",
-            "sql": "SELECT xslt.main.xpath_string('<r><a>x</a><a>y</a></r>', '//a')",
-        },
+            "description": _XSLT_EXAMPLE_DESC,
+            "sql": _XSLT_EXAMPLE_SQL,
+        }
     ]
 )
 
@@ -104,8 +102,8 @@ class XsltFunction(ScalarFunction):
                     "power of XSLT 3.0 (templates, `xsl:value-of`, `xsl:for-each`, modes, "
                     "functions) — directly in SQL.\n\n"
                     "**Inputs:** `xml` (the source document) and `stylesheet` (the XSLT 3.0 "
-                    "source). Both are VARCHAR.\n\n"
-                    "**Output:** VARCHAR — the serialized result tree (often XML, but the "
+                    "source). Both are `VARCHAR`.\n\n"
+                    "**Output:** `VARCHAR` — the serialized result tree (often XML, but the "
                     "stylesheet's `xsl:output` may select text/HTML/JSON).\n\n"
                     "**Behavior & edge cases:** a NULL in either argument yields NULL for that "
                     "row. Malformed XML or a malformed stylesheet raises a clean DuckDB error. "
@@ -117,9 +115,8 @@ class XsltFunction(ScalarFunction):
                     "Transform an XML document with an XSLT 3.0 stylesheet, returning the "
                     "serialized result.\n\n"
                     "## Usage\n\n"
-                    "```sql\n"
-                    "SELECT xslt.main.xslt(doc, stylesheet) FROM documents;\n"
-                    "```\n\n"
+                    "Call `xslt.main.xslt(xml, stylesheet)` in any projection to transform a "
+                    "document column against a stylesheet.\n\n"
                     "## Notes\n\n"
                     "- Powered by SaxonC-HE (XSLT 3.0).\n"
                     "- NULL input -> NULL output.\n"
@@ -136,14 +133,12 @@ class XsltFunction(ScalarFunction):
                     "saxon",
                     "reshape xml",
                 ],
+                examples=[(_XSLT_EXAMPLE_DESC, _XSLT_EXAMPLE_SQL)],
             ),
             "vgi.executable_examples": _XSLT_EXECUTABLE_EXAMPLES,
         }
         examples = [
-            FunctionExample(
-                sql=f"SELECT xslt.main.xslt('<doc><n>hi</n></doc>', '{_XSLT_STYLESHEET}')",
-                description="Apply an XSLT stylesheet to a document",
-            ),
+            FunctionExample(sql=_XSLT_EXAMPLE_SQL, description=_XSLT_EXAMPLE_DESC),
         ]
 
     @classmethod
@@ -174,8 +169,8 @@ class XPathStringFunction(ScalarFunction):
                 "**string value of the first match** (or NULL when nothing matches).\n\n"
                 "**When to use:** pull a single text value out of XML — an element's text, an "
                 "attribute, or any atomic computed by XPath (`string(...)`, `concat(...)`, etc.).\n\n"
-                "**Inputs:** `xml` (the document) and `expr` (an XPath 3.1 expression). Both VARCHAR.\n\n"
-                "**Output:** VARCHAR — the string value of the first node/atomic in document order, "
+                "**Inputs:** `xml` (the document) and `expr` (an XPath 3.1 expression). Both `VARCHAR`.\n\n"
+                "**Output:** `VARCHAR` — the string value of the first node/atomic in document order, "
                 "or NULL if the expression selects nothing.\n\n"
                 "**Behavior & edge cases:** NULL in either argument yields NULL. A malformed "
                 "document or a malformed XPath raises a clean DuckDB error. Namespaces follow the "
@@ -203,6 +198,12 @@ class XPathStringFunction(ScalarFunction):
                 "query xml",
                 "select",
                 "saxon",
+            ],
+            examples=[
+                (
+                    "First matching node's string value.",
+                    "SELECT xslt.main.xpath_string('<r><a>x</a><a>y</a></r>', '//a')",
+                ),
             ],
         )
         examples = [
@@ -241,8 +242,8 @@ class XPathBooleanFunction(ScalarFunction):
                 "**When to use:** test a condition over XML inside a SQL `WHERE`/`CASE` — does a "
                 "node exist (`boolean(//x)`), does a count match (`count(//a) = 1`), or any "
                 "predicate that XPath can express.\n\n"
-                "**Inputs:** `xml` (the document) and `expr` (an XPath 3.1 expression). Both VARCHAR.\n\n"
-                "**Output:** BOOLEAN — the EBV of the expression (a non-empty node-set is true, an "
+                "**Inputs:** `xml` (the document) and `expr` (an XPath 3.1 expression). Both `VARCHAR`.\n\n"
+                "**Output:** `BOOLEAN` — the EBV of the expression (a non-empty node-set is true, an "
                 "empty one is false; numeric/string EBV rules apply for atomics).\n\n"
                 "**Behavior & edge cases:** NULL in either argument yields NULL. Malformed XML or "
                 "XPath raises a clean DuckDB error."
@@ -268,6 +269,12 @@ class XPathBooleanFunction(ScalarFunction):
                 "ebv",
                 "query xml",
                 "saxon",
+            ],
+            examples=[
+                (
+                    "Test an XPath count predicate as a boolean.",
+                    "SELECT xslt.main.xpath_boolean('<r><a/></r>', 'count(//a) = 1')",
+                ),
             ],
         )
         examples = [
@@ -297,7 +304,7 @@ class XPathNumberFunction(ScalarFunction):
         """Function metadata."""
 
         name = "xpath_number"
-        description = "Numeric (DOUBLE) value of the first XPath 3.1 match (NULL if non-numeric)"
+        description = "Numeric (`DOUBLE`) value of the first XPath 3.1 match (NULL if non-numeric)"
         categories = ["xslt", "xpath"]
         tags = object_tags(
             title="XPath Numeric Value",
@@ -305,12 +312,12 @@ class XPathNumberFunction(ScalarFunction):
             doc_llm=(
                 "## xpath_number\n\n"
                 "Evaluate an **XPath 3.1** expression against an XML document and return its "
-                "**numeric value** as a DOUBLE.\n\n"
+                "**numeric value** as a `DOUBLE`.\n\n"
                 "**When to use:** extract a number from XML and use it in SQL arithmetic — a "
                 "measurement, a count (`count(//item)`), a sum (`sum(//price)`), or any numeric "
                 "XPath computation.\n\n"
-                "**Inputs:** `xml` (the document) and `expr` (an XPath 3.1 expression). Both VARCHAR.\n\n"
-                "**Output:** DOUBLE — the numeric value of the first match, or NULL when the value "
+                "**Inputs:** `xml` (the document) and `expr` (an XPath 3.1 expression). Both `VARCHAR`.\n\n"
+                "**Output:** `DOUBLE` — the numeric value of the first match, or NULL when the value "
                 "is non-numeric (XPath NaN) or nothing matches.\n\n"
                 "**Behavior & edge cases:** NULL in either argument yields NULL. Wrap a path in "
                 "`number(...)` to coerce a text node. Malformed XML or XPath raises a clean DuckDB "
@@ -318,7 +325,7 @@ class XPathNumberFunction(ScalarFunction):
             ),
             doc_md=(
                 "# xpath_number\n\n"
-                "Return the numeric (DOUBLE) value of the first XPath 3.1 match, or NULL.\n\n"
+                "Return the numeric (`DOUBLE`) value of the first XPath 3.1 match, or NULL.\n\n"
                 "## Usage\n\n"
                 "```sql\n"
                 "SELECT xslt.main.xpath_number('<r><n>42</n></r>', 'number(//n)');  -- 42.0\n"
@@ -339,6 +346,12 @@ class XPathNumberFunction(ScalarFunction):
                 "query xml",
                 "saxon",
             ],
+            examples=[
+                (
+                    "Read a numeric value out of the document via XPath.",
+                    "SELECT xslt.main.xpath_number('<r><n>42</n></r>', 'number(//n)')",
+                ),
+            ],
         )
         examples = [
             FunctionExample(
@@ -353,7 +366,7 @@ class XPathNumberFunction(ScalarFunction):
         xml: Annotated[pa.StringArray, Param(doc="XML document.")],
         expr: Annotated[
             pa.StringArray,
-            Param(doc="XPath 3.1 expression whose value (e.g. a count, sum, or measurement) is read as a number."),
+            Param(doc="XPath 3.1 expression whose value is read as a number."),
         ],
     ) -> Annotated[pa.DoubleArray, Returns()]:
         """Map each input row to its output value."""
@@ -361,7 +374,7 @@ class XPathNumberFunction(ScalarFunction):
 
 
 class XPathArrayFunction(ScalarFunction):
-    """``xpath_array(xml, expr)`` -- string values of ALL matches as a VARCHAR[]."""
+    """``xpath_array(xml, expr)`` -- string values of ALL matches as a `VARCHAR[]`."""
 
     class Meta:
         """Function metadata."""
@@ -384,7 +397,7 @@ class XPathArrayFunction(ScalarFunction):
                 "counterpart to the `xpath_nodes` table function (which binds one constant "
                 "document).\n\n"
                 "**Inputs:** `xml` (the document) and `expr` (an XPath 3.1 expression selecting "
-                "many items). Both VARCHAR.\n\n"
+                "many items). Both `VARCHAR`.\n\n"
                 "**Output:** `VARCHAR[]` — the string value of every match, in document order; an "
                 "empty list when nothing matches.\n\n"
                 "**Behavior & edge cases:** NULL in either argument yields NULL (not an empty "
@@ -412,6 +425,12 @@ class XPathArrayFunction(ScalarFunction):
                 "explode",
                 "query xml",
                 "saxon",
+            ],
+            examples=[
+                (
+                    "Shred all matching nodes into rows with UNNEST.",
+                    "SELECT UNNEST(xslt.main.xpath_array('<r><i>a</i><i>b</i></r>', '//i'))",
+                ),
             ],
         )
         examples = [
@@ -454,8 +473,8 @@ class XQueryFunction(ScalarFunction):
                 "parts of the document, and string/sequence functions like "
                 "`string-join(//i, ',')`.\n\n"
                 "**Inputs:** `xml` (the document, available as `.` and `/`) and `query` (the "
-                "XQuery 3.1 source). Both VARCHAR.\n\n"
-                "**Output:** VARCHAR — the serialized query result (atomic text, or constructed "
+                "XQuery 3.1 source). Both `VARCHAR`.\n\n"
+                "**Output:** `VARCHAR` — the serialized query result (atomic text, or constructed "
                 "XML, depending on the query).\n\n"
                 "**Behavior & edge cases:** NULL in either argument yields NULL. Use `xquery_rows` "
                 "instead when you want one row per item of the result sequence. Malformed XML or a "
@@ -483,6 +502,12 @@ class XQueryFunction(ScalarFunction):
                 "construct",
                 "transform",
                 "saxon",
+            ],
+            examples=[
+                (
+                    "Join matched values into one string with an XQuery string-join.",
+                    "SELECT xslt.main.xquery('<r><i>a</i><i>b</i></r>', 'string-join(//i, \",\")')",
+                ),
             ],
         )
         examples = [
@@ -521,8 +546,8 @@ class IsWellFormedFunction(ScalarFunction):
                 "**When to use:** validate or filter a column of candidate XML before transforming "
                 "or querying it, e.g. `WHERE xslt.main.is_well_formed(doc)`, so malformed rows do "
                 "not abort the scan.\n\n"
-                "**Inputs:** `xml` (the candidate text). VARCHAR.\n\n"
-                "**Output:** BOOLEAN — `true` for well-formed XML, `false` for malformed text; "
+                "**Inputs:** `xml` (the candidate text). `VARCHAR`.\n\n"
+                "**Output:** `BOOLEAN` — `true` for well-formed XML, `false` for malformed text; "
                 "NULL input yields NULL.\n\n"
                 "**Behavior & edge cases:** this checks *well-formedness* (does it parse), not "
                 "schema validity — SaxonC-HE is not schema-aware, so there is no XSD validation. "
@@ -551,6 +576,12 @@ class IsWellFormedFunction(ScalarFunction):
                 "filter",
                 "xml",
                 "saxon",
+            ],
+            examples=[
+                (
+                    "Check whether a string is well-formed XML.",
+                    "SELECT xslt.main.is_well_formed('<a></a>')",
+                ),
             ],
         )
         examples = [

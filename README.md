@@ -27,7 +27,7 @@ SELECT UNNEST(xslt.xpath_array('<r><i>a</i><i>b</i></r>', '//i'));  -- 'a','b'  
 SELECT xslt.xquery('<r><i>a</i><i>b</i></r>', 'string-join(//i, ",")');  -- 'a,b'
 SELECT xslt.is_well_formed('<a></a>');                         -- true
 SELECT * FROM xslt.xpath_nodes('<r><i>a</i><i>b</i></r>', '//i');  -- (seq, value) rows
-SELECT * FROM xslt.saxon_version();
+SELECT version, schema_aware FROM xslt.saxon_info;  -- engine capabilities
 ```
 
 The headline is **`xpath_array`** + `UNNEST`: it turns a column of XML documents
@@ -47,8 +47,9 @@ FROM documents;
   arity overloads.
 
 * **Table functions** expand one document into **many rows** and accept named
-  arguments: `xpath_nodes(xml, expr)`, `xquery_rows(xml, query)`, and the no-arg
-  discovery `saxon_version()`.
+  arguments: `xpath_nodes(xml, expr)` and `xquery_rows(xml, query)`. The
+  single-row `saxon_info` capabilities table (no arguments) is also directly
+  browsable.
 
 **NULL semantics.** A NULL in any scalar argument yields NULL output for that
 row; a table function over a NULL document yields no rows. **Invalid** input —
@@ -69,7 +70,7 @@ reports malformed XML as `false` rather than erroring.
 | `is_well_formed` | scalar | `(xml)` | `BOOLEAN` (false if malformed, never errors) |
 | `xpath_nodes` | table | `(xml, expr)` | `(seq BIGINT, value VARCHAR)` |
 | `xquery_rows` | table | `(xml, query)` | `(seq BIGINT, value VARCHAR)` |
-| `saxon_version` | table | `()` | `(version VARCHAR)` |
+| `saxon_info` | table | `()` | `(version, edition, xslt_version, xquery_version, xpath_version VARCHAR, schema_aware BOOLEAN)` |
 
 ### XSLT transforms
 
@@ -192,7 +193,7 @@ Makefile                 test / test-unit / test-sql targets
 vgi_xslt/
   engine.py              pure Saxon primitives: singleton processor + compile caches (only saxonche importer)
   scalars.py             per-row scalars (xslt, xpath_*, xquery, is_well_formed)
-  tables.py              table functions: xpath_nodes, xquery_rows, saxon_version
+  tables.py              table functions: xpath_nodes, xquery_rows, saxon_info
   schema_utils.py        Arrow field/comment helper
 tests/
   harness.py             in-process bind→init→process driver

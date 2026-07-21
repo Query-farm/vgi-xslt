@@ -35,6 +35,18 @@ def keywords_json(keywords: Sequence[str]) -> str:
     return json.dumps(list(keywords))
 
 
+def example_queries_json(examples: Sequence[tuple[str, str]]) -> str:
+    """Serialize described example queries as a JSON array string (VGI515).
+
+    Each element is a ``(description, sql)`` pair rendered as a
+    ``{"description": ..., "sql": ...}`` object. ``vgi.example_queries`` is the
+    executed, coverage-checked, description-carrying example carrier: the native
+    ``duckdb_functions().examples`` slot drops the description, so every object's
+    runnable examples live here with a non-empty description each.
+    """
+    return json.dumps([{"description": d, "sql": s} for d, s in examples])
+
+
 def object_tags(
     *,
     title: str,
@@ -42,14 +54,16 @@ def object_tags(
     doc_md: str,
     keywords: Sequence[str],
     category: str,
+    examples: Sequence[tuple[str, str]],
 ) -> dict[str, str]:
     """Build the standard per-object discovery/description tags.
 
     ``keywords`` is a sequence of search terms serialized to a JSON array
     (VGI138). ``category`` is the name of one of the schema's ``vgi.categories``
     entries (VGI413) -- it groups the object in the worker's navigation/listing.
-    ``vgi.source_url`` is intentionally omitted -- it belongs only on the catalog
-    object (VGI139).
+    ``examples`` is a sequence of ``(description, sql)`` pairs emitted as the
+    ``vgi.example_queries`` described-example carrier (VGI515). ``vgi.source_url``
+    is intentionally omitted -- it belongs only on the catalog object (VGI139).
     """
     return {
         "vgi.title": title,
@@ -58,4 +72,6 @@ def object_tags(
         "vgi.keywords": keywords_json(keywords),
         # VGI413: classify the object into one of the schema's vgi.categories.
         "vgi.category": category,
+        # VGI515: described, executed, coverage-checked example queries.
+        "vgi.example_queries": example_queries_json(examples),
     }

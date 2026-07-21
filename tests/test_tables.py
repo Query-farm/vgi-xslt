@@ -1,6 +1,6 @@
 """Integration tests for the xslt table functions.
 
-Drives ``xpath_nodes``, ``xquery_rows`` and ``saxon_version`` through the real
+Drives ``xpath_nodes`` and ``xquery_rows`` through the real
 bind -> init -> process lifecycle in-process (no worker subprocess).
 """
 
@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import pyarrow as pa
 
-from vgi_xslt.tables import SaxonVersionFunction, XPathNodesFunction, XQueryRowsFunction
+from vgi_xslt.tables import XPathNodesFunction, XQueryRowsFunction
 
 from .harness import invoke_table_function
 
@@ -42,11 +42,3 @@ class TestXQueryRows:
         )
         assert table.column("seq").to_pylist() == [1, 2, 3]
         assert table.column("value").to_pylist() == ["2", "4", "6"]
-
-
-class TestSaxonVersion:
-    def test_single_row(self) -> None:
-        table = invoke_table_function(SaxonVersionFunction)
-        assert table.column_names == ["version"]
-        assert table.num_rows == 1
-        assert "Saxon" in table.column("version")[0].as_py()

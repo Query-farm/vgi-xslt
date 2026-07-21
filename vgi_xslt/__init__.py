@@ -8,8 +8,9 @@ The implementation is split so each concern stays focused:
   or VGI dependency, so it is directly unit-testable.
 - ``scalars`` -- per-row VGI scalar functions (positional-only) wrapping the
   engine primitives over Arrow arrays.
-- ``tables``  -- set-returning table functions (``xpath_nodes``, ``xquery_rows``,
-  ``saxon_version``) that shred one document into many rows.
+- ``tables``  -- set-returning table functions (``xpath_nodes``, ``xquery_rows``)
+  that shred one document into many rows, plus the single-row ``saxon_info``
+  engine-capabilities table.
 
 ``xslt_worker.py`` at the repo root assembles these into the ``xslt`` catalog
 and runs the worker over stdio (or HTTP).

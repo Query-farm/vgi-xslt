@@ -18,7 +18,7 @@ xslt_worker.py         repo-root stdio entry point; PEP 723 inline deps; main()
 vgi_xslt/
   engine.py            pure Saxon primitives; the singleton processor + compile caches; ONLY saxonche importer
   scalars.py           per-row scalars (xslt, xpath_string/boolean/number/array, xquery, is_well_formed)
-  tables.py            table functions: xpath_nodes, xquery_rows, saxon_version
+  tables.py            table functions: xpath_nodes, xquery_rows, saxon_info
   schema_utils.py      pa.Field comment / column-doc helper
 tests/                 pytest: test_engine (pure), test_tables (in-proc), test_scalars (Client RPC)
 test/sql/*.test        haybarn-unittest sqllogictest — authoritative E2E
