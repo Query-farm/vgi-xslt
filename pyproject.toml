@@ -35,11 +35,21 @@ dependencies = [
     "pyarrow",
 ]
 
+[project.scripts]
+# Console script the container image + a plain filesystem LOCATION can spawn:
+#   ATTACH 'xslt' (TYPE vgi, LOCATION 'vgi-xslt-worker');
+vgi-xslt-worker = "vgi_xslt.worker:main"
+
 [project.optional-dependencies]
 # HTTP transport: the worker can serve over HTTP (`xslt_worker.py --http`) in
 # addition to stdio. That path needs vgi-python's `http` extra (waitress).
 # CI's http transport leg installs this via `uv sync --extra http`.
 http = [
+    "vgi-python[http]>=0.16.0",
+]
+# HTTP-serving extra installed by the Docker image (`pip install '.[serve]'`).
+# Same requirement as `http`; named `serve` to match the shared Docker template.
+serve = [
     "vgi-python[http]>=0.16.0",
 ]
 dev = [
