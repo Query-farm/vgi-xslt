@@ -30,7 +30,7 @@ classifiers = [
 ]
 requires-python = ">=3.13"
 dependencies = [
-    "vgi-python>=0.16.0",
+    "vgi-python>=0.30.0",
     "saxonche>=13.0",
     "pyarrow",
 ]
@@ -45,12 +45,12 @@ vgi-xslt-worker = "vgi_xslt.worker:main"
 # addition to stdio. That path needs vgi-python's `http` extra (waitress).
 # CI's http transport leg installs this via `uv sync --extra http`.
 http = [
-    "vgi-python[http]>=0.16.0",
+    "vgi-python[http]>=0.30.0",
 ]
 # HTTP-serving extra installed by the Docker image (`pip install '.[serve]'`).
 # Same requirement as `http`; named `serve` to match the shared Docker template.
 serve = [
-    "vgi-python[http]>=0.16.0",
+    "vgi-python[http]>=0.30.0",
 ]
 dev = [
     "pytest>=8",
