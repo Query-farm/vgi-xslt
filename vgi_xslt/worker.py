@@ -242,10 +242,9 @@ _TASK_STYLESHEET = (
 
 # VGI152: a fixed analyst-task suite so `vgi-lint simulate` (and the --ai
 # agent-check) can measure how well an agent actually uses this worker. Each task
-# gives the analyst only a `prompt`; `reference_sql` is the grader-only canonical
-# solution (run live in the same engine, so version/serialization match exactly).
-# Row-returning tasks set `unordered` + `ignore_column_names` so a correct answer
-# with different aliasing/ordering still grades as a pass.
+# is a public {name, prompt}. VGI416: the grader-only fields (`reference_sql`,
+# `unordered`, `ignore_column_names`) live in the private `vgi-agent-tests.yaml`
+# sidecar at the repo root, never in catalog metadata.
 _AGENT_TEST_TASKS = json.dumps(
     [
         {
@@ -254,10 +253,6 @@ _AGENT_TEST_TASKS = json.dumps(
                 "The XML document '<book><title>Dune</title><author>Herbert</author></book>' is "
                 "stored as a string. Return the text of the <title> element."
             ),
-            "reference_sql": (
-                "SELECT xslt.main.xpath_string('<book><title>Dune</title><author>Herbert</author></book>', '//title')"
-            ),
-            "ignore_column_names": True,
         },
         {
             "name": "count-item-elements",
@@ -265,11 +260,6 @@ _AGENT_TEST_TASKS = json.dumps(
                 "For the XML '<list><item>a</item><item>b</item><item>c</item></list>', return the "
                 "number of <item> elements it contains, as a number."
             ),
-            "reference_sql": (
-                "SELECT xslt.main.xpath_number("
-                "'<list><item>a</item><item>b</item><item>c</item></list>', 'count(//item)')"
-            ),
-            "ignore_column_names": True,
         },
         {
             "name": "test-element-presence",
@@ -277,8 +267,6 @@ _AGENT_TEST_TASKS = json.dumps(
                 "For the XML '<config><debug/></config>', return TRUE if it contains at least one "
                 "<debug> element and FALSE otherwise."
             ),
-            "reference_sql": "SELECT xslt.main.xpath_boolean('<config><debug/></config>', 'boolean(//debug)')",
-            "ignore_column_names": True,
         },
         {
             "name": "collect-match-array",
@@ -287,10 +275,6 @@ _AGENT_TEST_TASKS = json.dumps(
                 "'<colors><c>red</c><c>green</c><c>blue</c></colors>', returns the text of every "
                 "<c> element collected into one list/array value."
             ),
-            "reference_sql": (
-                "SELECT xslt.main.xpath_array('<colors><c>red</c><c>green</c><c>blue</c></colors>', '//c')"
-            ),
-            "ignore_column_names": True,
         },
         {
             "name": "shred-nodes-to-rows",
@@ -300,11 +284,6 @@ _AGENT_TEST_TASKS = json.dumps(
                 "Select all columns the matching table function returns (its 1-based position and "
                 "the matched text value)."
             ),
-            "reference_sql": (
-                "SELECT * FROM xslt.main.xpath_nodes('<colors><c>red</c><c>green</c><c>blue</c></colors>', '//c')"
-            ),
-            "unordered": True,
-            "ignore_column_names": True,
         },
         {
             "name": "join-number-values",
@@ -312,10 +291,6 @@ _AGENT_TEST_TASKS = json.dumps(
                 "For the XML '<nums><n>1</n><n>2</n><n>3</n></nums>', return a single string that "
                 "joins the text of all <n> elements separated by hyphens (for example, 1-2-3)."
             ),
-            "reference_sql": (
-                "SELECT xslt.main.xquery('<nums><n>1</n><n>2</n><n>3</n></nums>', 'string-join(//n, \"-\")')"
-            ),
-            "ignore_column_names": True,
         },
         {
             "name": "xquery-rows-sequence",
@@ -326,9 +301,6 @@ _AGENT_TEST_TASKS = json.dumps(
                 "columns the matching table function returns (its 1-based position and the item's "
                 "text value)."
             ),
-            "reference_sql": ("SELECT * FROM xslt.main.xquery_rows('<nums><n>1</n><n>2</n><n>3</n></nums>', '//n')"),
-            "unordered": True,
-            "ignore_column_names": True,
         },
         {
             "name": "detect-malformed-xml",
@@ -336,8 +308,6 @@ _AGENT_TEST_TASKS = json.dumps(
                 "Determine whether the string '<a><b></a>' is well-formed XML. Return TRUE if it "
                 "is well-formed and FALSE if it is malformed."
             ),
-            "reference_sql": "SELECT xslt.main.is_well_formed('<a><b></a>')",
-            "ignore_column_names": True,
         },
         {
             "name": "transform-with-stylesheet",
@@ -346,10 +316,6 @@ _AGENT_TEST_TASKS = json.dumps(
                 "'<greeting><name>World</name></greeting>' and return the serialized result.\n\n"
                 f"Stylesheet:\n{_TASK_STYLESHEET}"
             ),
-            "reference_sql": (
-                f"SELECT xslt.main.xslt('<greeting><name>World</name></greeting>', '{_TASK_STYLESHEET}')"
-            ),
-            "ignore_column_names": True,
         },
         {
             "name": "engine-supports-xsd-validation",
@@ -357,8 +323,6 @@ _AGENT_TEST_TASKS = json.dumps(
                 "Using the worker's engine reference/capabilities table, return whether this "
                 "worker's Saxon engine can perform XSD schema validation (its schema-aware flag)."
             ),
-            "reference_sql": "SELECT schema_aware FROM xslt.main.saxon_info",
-            "ignore_column_names": True,
         },
     ]
 )
@@ -431,7 +395,7 @@ _XSLT_CATALOG = Catalog(
     },
     schemas=[
         Schema(
-            name="main",
+            path=["main"],
             comment="XSLT 3.0 / XQuery 3.1 / XPath 3.1 over XML for SQL (SaxonC-HE)",
             tags={
                 "vgi.title": "XSLT — main",

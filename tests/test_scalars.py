@@ -46,6 +46,7 @@ def _scalar2(client: Client, name: str, xml: list, arg: list) -> list:
     results = list(
         client.scalar_function(
             function_name=name,
+            schema_path=["main"],
             input=iter([batch]),
             arguments=Arguments(positional=[pa.scalar("xml"), pa.scalar("arg")]),
         )
@@ -59,6 +60,7 @@ def _scalar1(client: Client, name: str, xml: list) -> list:
     results = list(
         client.scalar_function(
             function_name=name,
+            schema_path=["main"],
             input=iter([batch]),
             arguments=Arguments(positional=[pa.scalar("xml")]),
         )

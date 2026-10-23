@@ -1,0 +1,36 @@
+# Private graders for `vgi-lint simulate` (VGI416). The worker publishes only
+# task names and prompts in vgi.agent_test_tasks; these canonical solutions stay
+# in the repo and are never exposed in catalog metadata.
+tasks:
+  - name: extract-title-text
+    reference_sql: "SELECT xslt.main.xpath_string('<book><title>Dune</title><author>Herbert</author></book>', '//title')"
+    ignore_column_names: true
+  - name: count-item-elements
+    reference_sql: "SELECT xslt.main.xpath_number('<list><item>a</item><item>b</item><item>c</item></list>', 'count(//item)')"
+    ignore_column_names: true
+  - name: test-element-presence
+    reference_sql: "SELECT xslt.main.xpath_boolean('<config><debug/></config>', 'boolean(//debug)')"
+    ignore_column_names: true
+  - name: collect-match-array
+    reference_sql: "SELECT xslt.main.xpath_array('<colors><c>red</c><c>green</c><c>blue</c></colors>', '//c')"
+    ignore_column_names: true
+  - name: shred-nodes-to-rows
+    reference_sql: "SELECT * FROM xslt.main.xpath_nodes('<colors><c>red</c><c>green</c><c>blue</c></colors>', '//c')"
+    ignore_column_names: true
+    unordered: true
+  - name: join-number-values
+    reference_sql: "SELECT xslt.main.xquery('<nums><n>1</n><n>2</n><n>3</n></nums>', 'string-join(//n, \"-\")')"
+    ignore_column_names: true
+  - name: xquery-rows-sequence
+    reference_sql: "SELECT * FROM xslt.main.xquery_rows('<nums><n>1</n><n>2</n><n>3</n></nums>', '//n')"
+    ignore_column_names: true
+    unordered: true
+  - name: detect-malformed-xml
+    reference_sql: "SELECT xslt.main.is_well_formed('<a><b></a>')"
+    ignore_column_names: true
+  - name: transform-with-stylesheet
+    reference_sql: "SELECT xslt.main.xslt('<greeting><name>World</name></greeting>', '<xsl:stylesheet version=\"3.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"><xsl:template match=\"/\"><hello><xsl:value-of select=\"//name\"/></hello></xsl:template></xsl:stylesheet>')"
+    ignore_column_names: true
+  - name: engine-supports-xsd-validation
+    reference_sql: "SELECT schema_aware FROM xslt.main.saxon_info"
+    ignore_column_names: true
