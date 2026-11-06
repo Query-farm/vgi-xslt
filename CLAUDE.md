@@ -66,7 +66,7 @@ This is the heart of the worker — do not regress it.
    SKIPPED. Use an explicit `statement ok` / `LOAD vgi;` instead (every `.test`
    here already does). `LOAD vgi` also works under the locally-built vgi
    unittest. Run the SQL suite with:
-   `VGI_XSLT_WORKER="uv run --python 3.13 xslt_worker.py" haybarn-unittest --test-dir . "test/sql/*"`.
+   `VGI_XSLT_WORKER="uv run --python 3.13 xslt_worker.py" haybarn-unittest --keep-home --test-dir . "test/sql/*"`.
 2. **A LIST return type needs an explicit `Returns(arrow_type=...)`.**
    `xpath_array` returns `VARCHAR[]`; its `compute` is annotated
    `-> Annotated[pa.ListArray, Returns(arrow_type=pa.list_(pa.string()))]`. The
@@ -114,8 +114,10 @@ uv run ruff check . && uv run mypy vgi_xslt/
 ```
 
 `make test-sql` sets `VGI_XSLT_WORKER="uv run --python 3.13 xslt_worker.py"`,
-puts `~/.local/bin` on PATH, and runs `haybarn-unittest --test-dir . "test/sql/*"`.
-Install the runner once with `uv tool install haybarn-unittest`. CI
+puts `~/.local/bin` on PATH, and runs `haybarn-unittest --keep-home --test-dir . "test/sql/*"`.
+Install the runner once with
+`uv tool install --prerelease allow 'haybarn-unittest>=2.0.0rc11,<2.1'` (haybarn 2.0 is required:
+its community `vgi` extension speaks the worker's VGI protocol vgi.v3 / 3.1). CI
 (`.github/workflows/ci.yml`) runs unit + lint + a gated `e2e` job that installs
 haybarn-unittest and runs `make test-sql`.
 

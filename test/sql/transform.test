@@ -8,7 +8,7 @@ statement ok
 LOAD vgi;
 
 statement ok
-ATTACH 'xslt' AS xslt (TYPE vgi, LOCATION '${VGI_XSLT_WORKER}');
+ATTACH 'xslt' AS xslt (TYPE vgi, LOCATION '{VGI_XSLT_WORKER}');
 
 # ---------------------------------------------------------------------------
 # xslt() — value-extract transform

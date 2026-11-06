@@ -37,10 +37,31 @@ from __future__ import annotations
 import json
 
 from vgi import Worker
-from vgi.catalog import Catalog, Schema, Table
+from vgi.catalog import Catalog, ConstraintInfo, Schema, Table, constraint_record
 
 from vgi_xslt.scalars import SCALAR_FUNCTIONS
 from vgi_xslt.tables import TABLE_FUNCTIONS, SaxonInfoFunction
+
+
+def _trusted(table: str, constraint_id: str, kind: str, columns: list[list[str]]) -> ConstraintInfo:
+    """Build an ENFORCED / ALL_ROWS constraint record on a ``main`` table.
+
+    DuckDB only reads trusted (ENFORCED + ALL_ROWS) records under vgi.v3, so
+    declare one only when every row the table can return satisfies it.
+
+    Args:
+        table: Table name.
+        constraint_id: Constraint id, unique within the table.
+        kind: ``PRIMARY_KEY``, ``UNIQUE`` or ``NOT_NULL``.
+        columns: Column paths, e.g. ``[["id"]]``.
+
+    Returns:
+        The canonical constraint record.
+    """
+    return constraint_record(
+        ["main"], table, constraint_id, kind, columns, enforcement="ENFORCED", validation="ALL_ROWS"
+    )
+
 
 _FUNCTIONS: list[type] = [
     *SCALAR_FUNCTIONS,
@@ -425,14 +446,18 @@ _XSLT_CATALOG = Catalog(
                     inline_bind=True,
                     comment="One row describing the bundled SaxonC engine and its capabilities.",
                     # The version string uniquely identifies the single row (VGI807).
-                    primary_key=(("version",),),
-                    not_null=(
-                        "version",
-                        "edition",
-                        "xslt_version",
-                        "xquery_version",
-                        "xpath_version",
-                        "schema_aware",
+                    constraints=(
+                        _trusted("saxon_info", "pk", "PRIMARY_KEY", [["version"]]),
+                        *(
+                            _trusted("saxon_info", f"{col}_not_null", "NOT_NULL", [[col]])
+                            for col in (
+                                "edition",
+                                "xslt_version",
+                                "xquery_version",
+                                "xpath_version",
+                                "schema_aware",
+                            )
+                        ),
                     ),
                     tags=_SAXON_INFO_TABLE_TAGS,
                 ),
