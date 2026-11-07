@@ -18,7 +18,7 @@ the [`saxonche`](https://pypi.org/project/saxonche/) Python bindings.
 
 ```sql
 INSTALL vgi FROM community; LOAD vgi;
-ATTACH 'xslt' (TYPE vgi, LOCATION 'uv run xslt_worker.py');
+ATTACH 'xslt' (TYPE vgi, LOCATION 'uvx --from git+https://github.com/Query-farm/vgi-xslt@v0.2.0 vgi-xslt-worker');
 
 SELECT xslt.xpath_string('<r><a>x</a></r>', '//a');            -- 'x'
 SELECT xslt.xpath_boolean('<r><a/></r>', 'count(//a) = 1');    -- true
@@ -37,6 +37,39 @@ into shredded rows, one per matching node, in a single SQL statement:
 SELECT id, UNNEST(xpath_array(doc, '//item')) AS item
 FROM documents;
 ```
+
+## Quick start
+
+The worker isn't on PyPI; [uv](https://docs.astral.sh/uv/) runs it straight from a tagged release on GitHub. `uvx` builds an isolated environment on the first ATTACH and reuses it afterwards:
+
+```sql
+INSTALL vgi FROM community;
+LOAD vgi;
+
+ATTACH 'xslt' AS xslt (TYPE vgi, LOCATION 'uvx --from git+https://github.com/Query-farm/vgi-xslt@v0.2.0 vgi-xslt-worker');
+
+-- Test an XPath count predicate as a boolean.
+SELECT xslt.main.xpath_boolean('<r><a/></r>', 'count(//a) = 1');
+
+-- Read a numeric value out of a document via XPath.
+SELECT xslt.main.xpath_number('<r><n>42</n></r>', 'number(//n)');
+```
+
+Change `@v0.2.0` to move to a newer release.
+
+### Other ways to run it
+
+- **Docker** (the image bundles the worker and its dependencies):
+
+  ```sql
+  ATTACH 'xslt' AS xslt (TYPE vgi, LOCATION 'docker://ghcr.io/query-farm/vgi-xslt:0.2.0');
+  ```
+
+- **From a local checkout** (`git clone https://github.com/Query-farm/vgi-xslt`), point `LOCATION` at `uv run --project /path/to/vgi-xslt vgi-xslt-worker`.
+
+### Build from source
+
+To build and test the worker yourself from a checkout, see [Local development](#local-development).
 
 ## Scalars (per-row) vs. table functions
 
