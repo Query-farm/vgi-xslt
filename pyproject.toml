@@ -1,6 +1,6 @@
 [project]
 name = "vgi-xslt"
-version = "0.1.0"
+version = "0.2.0"
 description = "XSLT 3.0 / XQuery 3.1 / XPath 3.1 over XML for DuckDB via VGI (SaxonC-HE)"
 readme = "README.md"
 keywords = [
