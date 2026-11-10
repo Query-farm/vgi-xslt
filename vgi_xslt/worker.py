@@ -406,7 +406,8 @@ _XSLT_CATALOG = Catalog(
     comment="XSLT 3.0 / XQuery 3.1 / XPath 3.1 over XML for SQL (SaxonC-HE).",
     source_url="https://github.com/Query-farm/vgi-xslt",
     tags={
-        "vgi.title": "XSLT, XQuery & XPath for XML",
+        "vgi.title": "XSLT and XQuery",
+        "vgi.subtitle": "Transform and query XML documents from SQL with XSLT, XQuery and XPath.",
         "vgi.keywords": _CATALOG_KEYWORDS,
         "vgi.doc_llm": _CATALOG_DESCRIPTION_LLM,
         "vgi.doc_md": _CATALOG_DESCRIPTION_MD,
@@ -419,7 +420,7 @@ _XSLT_CATALOG = Catalog(
             path=["main"],
             comment="XSLT 3.0 / XQuery 3.1 / XPath 3.1 over XML for SQL (SaxonC-HE)",
             tags={
-                "vgi.title": "XSLT — main",
+                "vgi.title": "XML transforms",
                 "vgi.keywords": _SCHEMA_KEYWORDS,
                 # VGI413: ordered category registry; each object names one via vgi.category.
                 "vgi.categories": _SCHEMA_CATEGORIES,
