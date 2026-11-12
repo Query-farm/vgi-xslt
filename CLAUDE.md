@@ -117,7 +117,7 @@ uv run ruff check . && uv run mypy vgi_xslt/
 puts `~/.local/bin` on PATH, and runs `haybarn-unittest --keep-home --test-dir . "test/sql/*"`.
 Install the runner once with
 `uv tool install --prerelease allow 'haybarn-unittest>=2.0.0rc11,<2.1'` (haybarn 2.0 is required:
-its community `vgi` extension speaks the worker's VGI protocol vgi.v3 / 3.2). CI
+its community `vgi` extension speaks the worker's VGI protocol vgi.v3 / 3.3). CI
 (`.github/workflows/ci.yml`) runs unit + lint + a gated `e2e` job that installs
 haybarn-unittest and runs `make test-sql`.
 
