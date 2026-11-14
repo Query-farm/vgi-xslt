@@ -1,0 +1,148 @@
+{
+  "schema_version": 1,
+  "repository": "Query-farm/vgi-xslt",
+  "revision": "da839290fd641cb75603336561c7a4d1aec3afbd",
+  "captured_at": "2026-11-14T20:54:37.612241+00:00",
+  "default_schema": "main",
+  "scope": "all_public_functions_and_tables",
+  "complete": true,
+  "objects": [
+    {
+      "schema": "main",
+      "name": "is_well_formed",
+      "kind": "function",
+      "signatures": [
+        "is_well_formed(VARCHAR) -> BOOLEAN"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "main",
+      "name": "saxon_info",
+      "kind": "function",
+      "signatures": [
+        "saxon_info() -> None"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "main",
+      "name": "xpath_array",
+      "kind": "function",
+      "signatures": [
+        "xpath_array(VARCHAR, VARCHAR) -> VARCHAR[]"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "main",
+      "name": "xpath_boolean",
+      "kind": "function",
+      "signatures": [
+        "xpath_boolean(VARCHAR, VARCHAR) -> BOOLEAN"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "main",
+      "name": "xpath_nodes",
+      "kind": "function",
+      "signatures": [
+        "xpath_nodes(VARCHAR, VARCHAR) -> None"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "main",
+      "name": "xpath_number",
+      "kind": "function",
+      "signatures": [
+        "xpath_number(VARCHAR, VARCHAR) -> DOUBLE"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "main",
+      "name": "xpath_string",
+      "kind": "function",
+      "signatures": [
+        "xpath_string(VARCHAR, VARCHAR) -> VARCHAR"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "main",
+      "name": "xquery",
+      "kind": "function",
+      "signatures": [
+        "xquery(VARCHAR, VARCHAR) -> VARCHAR"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "main",
+      "name": "xquery_rows",
+      "kind": "function",
+      "signatures": [
+        "xquery_rows(VARCHAR, VARCHAR) -> None"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "main",
+      "name": "xslt",
+      "kind": "function",
+      "signatures": [
+        "xslt(VARCHAR, VARCHAR) -> VARCHAR"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "main",
+      "name": "saxon_info",
+      "kind": "table",
+      "signatures": [
+        "TABLE"
+      ],
+      "authentication": "none",
+      "access": "read"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "coverage/current-vgi_xslt-worker.py",
+      "sha256": "c6714e1bdd637106e574c79991c4ce4c28db61ea8cfcacd27c7455ec140b7598",
+      "description": "Reviewed complete current registration or implementation"
+    },
+    {
+      "path": "coverage/current-vgi_xslt-scalars.py",
+      "sha256": "9c6ae4d9379b9cfddeb683b9ac34687dc2e51b99b6b3969a293e94cc9391eebb",
+      "description": "Reviewed complete current registration or implementation"
+    },
+    {
+      "path": "coverage/current-vgi_xslt-tables.py",
+      "sha256": "5df385b4048f04701252ff88795fc0c5723e0760c04f6b3e09eb18ef867f6f98",
+      "description": "Reviewed complete current registration or implementation"
+    },
+    {
+      "path": "coverage/current-vgi_xslt-engine.py",
+      "sha256": "fd39c77db97f0af35e8db3ae5ae6479ac508d501eb3f410560b2b1eca71df3ce",
+      "description": "Reviewed complete current registration or implementation"
+    },
+    {
+      "path": "coverage/release-to-current.diff",
+      "sha256": "63abbdb45bc34f4cea8b36f3712c86d0c5695bc551400e610f292efce8195308",
+      "description": "Full source comparison; changes are composed metadata/examples only"
+    }
+  ]
+}

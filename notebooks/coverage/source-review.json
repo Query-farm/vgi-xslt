@@ -1,0 +1,8 @@
+{
+  "current_revision": "da839290fd641cb75603336561c7a4d1aec3afbd",
+  "released_revision": "v0.4.0",
+  "current_exact_runtime_count": 0,
+  "source_ci": 43578490501,
+  "basis": "Complete10logical registrations/schemas reconciled. Source differences add composed examples and metadata only; parsing/transforms/return schemas and root dependency files unchanged. Current runtime not separately built/run.",
+  "all_named_capabilities_included": true
+}

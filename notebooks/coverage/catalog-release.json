@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "repository": "Query-farm/vgi-xslt",
+  "revision": "v0.4.0",
+  "captured_at": "2026-11-14T20:54:37.612241+00:00",
+  "default_schema": "main",
+  "scope": "all_public_functions_and_tables",
+  "complete": true,
+  "objects": [
+    {
+      "schema": "main",
+      "name": "is_well_formed",
+      "kind": "function",
+      "signatures": [
+        "is_well_formed(VARCHAR) -> BOOLEAN"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "main",
+      "name": "saxon_info",
+      "kind": "function",
+      "signatures": [
+        "saxon_info() -> None"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "main",
+      "name": "xpath_array",
+      "kind": "function",
+      "signatures": [
+        "xpath_array(VARCHAR, VARCHAR) -> VARCHAR[]"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "main",
+      "name": "xpath_boolean",
+      "kind": "function",
+      "signatures": [
+        "xpath_boolean(VARCHAR, VARCHAR) -> BOOLEAN"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "main",
+      "name": "xpath_nodes",
+      "kind": "function",
+      "signatures": [
+        "xpath_nodes(VARCHAR, VARCHAR) -> None"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "main",
+      "name": "xpath_number",
+      "kind": "function",
+      "signatures": [
+        "xpath_number(VARCHAR, VARCHAR) -> DOUBLE"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "main",
+      "name": "xpath_string",
+      "kind": "function",
+      "signatures": [
+        "xpath_string(VARCHAR, VARCHAR) -> VARCHAR"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "main",
+      "name": "xquery",
+      "kind": "function",
+      "signatures": [
+        "xquery(VARCHAR, VARCHAR) -> VARCHAR"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "main",
+      "name": "xquery_rows",
+      "kind": "function",
+      "signatures": [
+        "xquery_rows(VARCHAR, VARCHAR) -> None"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "main",
+      "name": "xslt",
+      "kind": "function",
+      "signatures": [
+        "xslt(VARCHAR, VARCHAR) -> VARCHAR"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "main",
+      "name": "saxon_info",
+      "kind": "table",
+      "signatures": [
+        "TABLE"
+      ],
+      "authentication": "none",
+      "access": "read"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "coverage/functions.json",
+      "sha256": "f7153085fbe5f99116efa0283576fd2c99d68f37f42182b6280d64aa45f64368",
+      "description": "Complete real released runtime functions export"
+    },
+    {
+      "path": "coverage/tables.json",
+      "sha256": "9cc1128a4a772d6a53faa1bf09e2b222835c07d32f60759be2db8ebfc13c6ad3",
+      "description": "Complete real released runtime tables export"
+    },
+    {
+      "path": "coverage/views.json",
+      "sha256": "9414045560bc350b68d31d4fb215042258e7b4870d31fb60b6b94996f821c277",
+      "description": "Complete real released runtime views export"
+    }
+  ]
+}

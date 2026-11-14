@@ -1,66 +1,96 @@
-# VGI XSLT notebooks
+# XSLT and XQuery examples
 
-[01 · Preserve the documents behind shredded XML rows](01_preserve_documents_when_shredding_xml.ipynb) audits synthetic XML documents, transforms exact namespace matches with XSLT, serializes and shreds records with XPath, and applies an explicit quantity contract in SQL. Empty, malformed, missing and out-of-scope documents remain visible.
+[Worker repository](https://github.com/Query-farm/vgi-xslt) · [Shared notebook tools and standard](https://github.com/Query-farm/vgi-example-notebooks)
 
-## Run
+| Notebook | Investigation | Run |
+|---|---|---|
+| [Preserve the documents behind shredded XML rows](01_preserve_documents_when_shredding_xml.ipynb) | Audit six documents, isolate namespaces, normalize with XSLT, and retain zero/missing/invalid quantities through reporting. | [Open in Colab](https://colab.research.google.com/github/Query-farm/vgi-xslt/blob/main/notebooks/01_preserve_documents_when_shredding_xml.ipynb) |
+| [The same unit total can describe different rows](02_same_units_different_row_counts.ipynb) | Compare XPath rows, XQuery rows and a scalar summary; excluding a zero line changes counts while leaving known units unchanged. | [Open in Colab](https://colab.research.google.com/github/Query-farm/vgi-xslt/blob/main/notebooks/02_same_units_different_row_counts.ipynb) |
 
-Install [uv](https://docs.astral.sh/uv/). From the repository root:
+Both notebooks have saved outputs, visible SQL, result-driven interpretation,
+linked worker titles and Colab buttons. Three SVG figures remain sharp on GitHub.
+GitHub displays executable code expanded; shared setup and small plotting helpers
+keep these cells concise. The VGI connection remains visible.
 
-```sh
-uv sync --project notebooks --frozen
-uv run --project notebooks --frozen python notebooks/execute.py
-```
+## Run locally or in Colab
 
-The whole `notebooks/` directory also runs separately from the worker checkout:
-
-```sh
-cd notebooks
-uv sync --frozen
-uv run --frozen python execute.py
-```
-
-Initial setup needs network access for Python dependencies, the community VGI extension, public Git source and SaxonC's native runtime wheel. Inputs and stylesheet are authored visibly in SQL. No credentials, external XML dataset, system Saxon installation or local worker build is required. The tested platform is macOS Apple silicon with Python 3.14; other platforms need compatible SaxonC/PyArrow wheels. The worker's first Saxon operation may take longer while the native runtime initializes.
-
-In VS Code select `notebooks/.venv/bin/python` and use `notebooks/` as the kernel working directory. Other Jupyter editors can optionally register the kernel:
+Open either Colab link and run all cells. Locally, run from this directory:
 
 ```sh
-uv run --project notebooks --frozen python -m ipykernel install --user --name vgi-xslt-notebooks --display-name 'Python (vgi-xslt notebooks)'
+uv sync --locked
+uv run --locked vgi-notebooks --timeout 300
 ```
 
-Restart and run all after editing parameters. Connection and analytical SQL remain expanded; setup, plotting, assertions and cleanup source are folded. Saved outputs embed both charts.
+Select `.venv/bin/python` for an interactive kernel. The notebook bootstrap installs
+the shared base tools and preserves compatible preinstalled plotting/kernel
+packages. The local environment additionally includes the runner. Its companion
+is fetched from an immutable revision and SHA-256 verified, so a standalone
+notebook does not require a worker checkout or copied standard/runner scripts.
 
-## Experiment
+Each visible ATTACH runs the public release in a separate environment:
+
+```text
+uvx --python 3.13 --from git+https://github.com/Query-farm/vgi-xslt@v0.4.0 vgi-xslt-worker
+```
+
+No SDK override is needed. First setup requires Git/network access and downloads
+the SaxonC-HE native wheel. The authored XML, stylesheets and queries then run
+locally with no API key or remote document retrieval. A worker release tag fixes
+its code; dependency ranges can resolve newer compatible packages on future installs.
+
+## XML scope and row meaning
+
+The first notebook deliberately includes an empty valid batch, an unrelated
+namespace, malformed XML and missing input. Parseability is materialized before
+calling functions that raise on malformed XML. EQNames and explicit XSLT namespace
+bindings restrict processing to the intended `urn:orders` elements. Selecting an
+element's string value does not preserve its markup: explicit `serialize(.)`
+retains attributes before array expansion and typed SQL extraction.
+
+All six documents stay in the audit even when they produce no item rows. The
+quantity contract is explicit: digits-only nonnegative integer text and a nonempty
+SKU. An authored zero is valid; missing and nonnumeric quantities remain unknown.
+The reporting minimum selects valid rows without changing source quality.
+
+The second notebook keeps five source line IDs across two row-returning query
+forms. Duplicate SKUs remain distinct lines. Result positions number the selected
+sequence and can change after filtering; they are not permanent source identities.
+The scalar XQuery summary is reconciled against typed row results, not compared
+only by total. One missing quantity remains outside the known-quantity view.
+
+SaxonC-HE reports `schema_aware=false`. Well-formedness, namespace scope and these
+small SQL contracts do not establish XSD validity or complete business correctness.
+
+## Run the experiments separately
+
+Raise the first notebook's minimum from one to three:
 
 ```sh
-uv run --project notebooks --frozen python notebooks/execute.py \
-  --parameters '{"MIN_QUANTITY":3}' \
-  --output-dir notebooks/validation/minimum-3
+uv run --locked vgi-notebooks 01_preserve_documents_when_shredding_xml.ipynb \
+  --parameters '{"MIN_QUANTITY":3}' --output-dir artifacts/minimum-three
 ```
 
-The default minimum is 1. Raising it to 3 changes selection while preserving parsing, normalization, raw values and input coverage. Reset to 1 for the saved default. Values from 0 to 1000 are accepted; zero remains a valid authored quantity even when not selected.
+Input documents, normalized XML, raw fields and invalid-row counts should remain
+unchanged. Only the selected valid rows and known-unit totals change. The accepted
+range is integer `0–1000`; restore `1` for the default.
 
-The runner requires a separate output destination for overrides, rejects unknown names and saves only successful full executions. Failed runs leave existing saved notebooks unchanged. Copies include relative branding, helpers, environment and documentation. Review charts, logs and experimental copies are Git-ignored.
+Exclude the second notebook's explicit zero:
 
-## Portable startup and provenance
+```sh
+uv run --locked vgi-notebooks 02_same_units_different_row_counts.ipynb \
+  --parameters '{"INCLUDE_ZERO":false}' --output-dir artifacts/exclude-zero
+```
 
-The visible literal location uses `uvx` with the public v0.4.0 Git revision `c6384204609d5bb4a7b15b65ca54e73c3f260821`, Python 3.14, VGI Python 0.51.0, VGI RPC 0.53.1, PyArrow 26.0.1 and SaxonC 13.1.1. The notebook environment separately pins Haybarn 2.0.0rc11. The worker is not on PyPI; Git installation and its cached environment are handled by uv. Upgrading means explicitly changing the source/runtime pins and rerunning both settings.
+Expect four selected lines to become three while ten known units remain ten.
+Source line IDs and the unknown quantity stay fixed. Restore `True` for the default.
 
-Six documents are authored in the notebook. D1 has two order items. D2 has four order items plus a telemetry-namespace item; its order quantities include a true zero, invalid text, a missing attribute and a valid three. D3 is an empty order batch. D4 has the same local element names in a different namespace. D5 is malformed and D6 is SQL NULL. These are synthetic counts, not operational records.
+The shared runner requires a separate output directory for overrides, rejects
+unknown parameter names and writes a notebook only after success. SQL assertions
+and chart reconciliations check document/line identity, namespace scope, quantities,
+row-function equivalence and aggregate consistency. SVG assets are committed for
+GitHub; experiment copies and review PNGs are ignored.
 
-The stylesheet is constant, shown in SQL and uses an explicit `urn:orders` namespace binding. It copies only intended item records and preserves a missing quantity attribute. It performs no resource fetches or stylesheet imports. The example assumes trusted, authored XML and stylesheet input; it is not a general XML sandbox or schema validator.
-
-## Interpretation
-
-`is_well_formed` reports parseability: malformed XML is false and SQL NULL stays NULL. Other XML functions raise errors for malformed input. We materialize successfully parsed documents before further XPath evaluation. The HE engine reports `schema_aware=false`; it does not provide XSD validation.
-
-XPath EQNames select the exact namespace URI without prefix-binding ambiguity. The wildcard count is shown only to illustrate how a broader namespace match includes unrelated items. The XSLT stylesheet also matches the exact namespace.
-
-`xpath_array` returns string values, not node markup by default. The explicit `serialize(.)` expression preserves row attributes before UNNEST. Document ID and ordinal identify the expanded records. Empty documents disappear from the expanded table but remain in the separate document audit, which is reconciled with row counts.
-
-The row contract requires a nonempty SKU and a digits-only nonnegative integer quantity representable as BIGINT. SQL preserves the original text, uses a guarded TRY_CAST, and separates missing/invalid quantities from valid zero. A minimum filter is a reporting decision, not a change to source quality. Unknown quantities do not become zero or enter known-unit sums.
-
-The six intended rows comprise four valid quantities and two invalid/missing quantities. At minimum 1, three rows contribute ten known units; at minimum 3, two rows contribute eight known units. The telemetry quantity 999 and other-namespace quantity 100 never enter the item table. The document coverage chart stays fixed.
-
-Validation covers default and detached experiment execution, four rendered charts, twelve SQL checks plus document/row/unit reconciliations, and three runner guards. The default run took 11.6 seconds; the detached minimum-three experiment took 2.9 seconds. The document chart is byte-identical across settings; document-audit, transformed-XML and typed-item output displays also match. Source checks passed: 54 pytest tests, 76 stdio / 82 HTTP / 76 Unix SQL assertions (three cases each), Ruff, formatting, mypy and pydoclint. Metadata scored 100/100 L2 with zero findings. Source code, tests and root dependencies/lock remain unchanged.
-
-Official Query.Farm Strata Sun and VGI artwork is copied unchanged from the approved assets, with linked Query.Farm branding at the top and bottom.
+[Coverage evidence](coverage.json) accounts for all ten public logical SQL surfaces.
+It records actual released execution separately from current-source compatibility.
+Current changes add examples/metadata; runtime implementation, schemas and root
+dependencies are unchanged. Existing green source CI is reused for this notebook update.

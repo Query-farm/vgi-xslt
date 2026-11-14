@@ -1,0 +1,428 @@
+{
+  "schema_version": 1,
+  "catalogs": {
+    "released": {
+      "path": "coverage/catalog-release.json",
+      "sha256": "f7761bc3b391c0c23c7ef5ecb30a0c03d50e9cdfd7bea3d879a2c26eeaf2eab6",
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root",
+        "reviewed_at": "2026-11-14T21:03:35.495355+00:00",
+        "catalog_sha256": "f7761bc3b391c0c23c7ef5ecb30a0c03d50e9cdfd7bea3d879a2c26eeaf2eab6",
+        "notes": "Complete actual v0.4.0 functions/tables/views export:10 logical names including saxon_info table/function alias. No capability exclusions."
+      }
+    },
+    "current": {
+      "path": "coverage/catalog-current.json",
+      "sha256": "ac2313d9c734ae547f61ae8d12e477e57902881cc4d95ddff4d42c0f64bc290f",
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root",
+        "reviewed_at": "2026-11-14T21:03:35.495355+00:00",
+        "catalog_sha256": "ac2313d9c734ae547f61ae8d12e477e57902881cc4d95ddff4d42c0f64bc290f",
+        "notes": "Complete current registrations atda839290fd641cb75603336561c7a4d1aec3afbd, including fullschemas. Current source adds composed examples/metadata only; computations, engine, bindings and root dependencies unchanged. Current runtime not separately built/run."
+      }
+    }
+  },
+  "notebooks": [
+    {
+      "path": "01_preserve_documents_when_shredding_xml.ipynb",
+      "sha256": "3ab67a133add32ab1a5691f1b203d94b83ad4086773568b2405e27cdcbc3771c",
+      "execution": {
+        "path": "coverage/run-01.json",
+        "sha256": "7dff2eed24c2f91dc713b6968411781cd9886325fc7b861426d683999cab4796"
+      }
+    },
+    {
+      "path": "02_same_units_different_row_counts.ipynb",
+      "sha256": "8628766bd21da762d05d5d9e143691dac33418ceabfe27de85d7362854b01b6b",
+      "execution": {
+        "path": "coverage/run-02.json",
+        "sha256": "9c93abc4bb4317f591896d55573c04cb9c7b6853af339b87089021e6db75ab48"
+      }
+    }
+  ],
+  "examples": [
+    {
+      "object": {
+        "schema": "main",
+        "name": "saxon_info"
+      },
+      "notebook": "01_preserve_documents_when_shredding_xml.ipynb",
+      "sql": [
+        {
+          "cell": "1683eb17",
+          "reference": "xslt.main.saxon_info"
+        }
+      ],
+      "narrative_cells": [
+        "451f50d6"
+      ],
+      "result_cells": [
+        "1683eb17"
+      ],
+      "interpretation_cells": [
+        "451f50d6",
+        "f31732a7"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root",
+        "reviewed_at": "2026-11-14T21:03:35.495355+00:00",
+        "notebook_sha256": "3ab67a133add32ab1a5691f1b203d94b83ad4086773568b2405e27cdcbc3771c",
+        "catalog_sha256": [
+          "f7761bc3b391c0c23c7ef5ecb30a0c03d50e9cdfd7bea3d879a2c26eeaf2eab6",
+          "ac2313d9c734ae547f61ae8d12e477e57902881cc4d95ddff4d42c0f64bc290f"
+        ],
+        "purpose": "Discover XML language support and schema-awareness before defining validation claims.",
+        "finding": "Released SaxonC-HE reports XPath3.1/XQuery3.1/XSLT3.0 and schema_aware=false. Narrative explicitly limits parsing and SQL checks, making no XSD validation claim."
+      }
+    },
+    {
+      "object": {
+        "schema": "main",
+        "name": "is_well_formed"
+      },
+      "notebook": "01_preserve_documents_when_shredding_xml.ipynb",
+      "sql": [
+        {
+          "cell": "d1c352de",
+          "reference": "xslt.main.is_well_formed"
+        },
+        {
+          "cell": "e40f2e34",
+          "reference": "xslt.main.is_well_formed"
+        }
+      ],
+      "narrative_cells": [
+        "84b6d77a",
+        "f31732a7"
+      ],
+      "result_cells": [
+        "d1c352de",
+        "7f3a54a6",
+        "961307d9"
+      ],
+      "interpretation_cells": [
+        "84b6d77a",
+        "7f3a54a6",
+        "961307d9"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root",
+        "reviewed_at": "2026-11-14T21:03:35.495355+00:00",
+        "notebook_sha256": "3ab67a133add32ab1a5691f1b203d94b83ad4086773568b2405e27cdcbc3771c",
+        "catalog_sha256": [
+          "f7761bc3b391c0c23c7ef5ecb30a0c03d50e9cdfd7bea3d879a2c26eeaf2eab6",
+          "ac2313d9c734ae547f61ae8d12e477e57902881cc4d95ddff4d42c0f64bc290f"
+        ],
+        "purpose": "Separate malformed, missing and parseable documents before running expressions that raise errors.",
+        "finding": "D5 is false and D6 NULL. Only materialized parseable documents reach namespace extraction. All6 original documents remain accounted for, and every transformed document is checked as well formed."
+      }
+    },
+    {
+      "object": {
+        "schema": "main",
+        "name": "xpath_boolean"
+      },
+      "notebook": "01_preserve_documents_when_shredding_xml.ipynb",
+      "sql": [
+        {
+          "cell": "d1c352de",
+          "reference": "xslt.main.xpath_boolean"
+        }
+      ],
+      "narrative_cells": [
+        "84b6d77a"
+      ],
+      "result_cells": [
+        "d1c352de",
+        "7f3a54a6",
+        "961307d9"
+      ],
+      "interpretation_cells": [
+        "84b6d77a",
+        "7f3a54a6"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root",
+        "reviewed_at": "2026-11-14T21:03:35.495355+00:00",
+        "notebook_sha256": "3ab67a133add32ab1a5691f1b203d94b83ad4086773568b2405e27cdcbc3771c",
+        "catalog_sha256": [
+          "f7761bc3b391c0c23c7ef5ecb30a0c03d50e9cdfd7bea3d879a2c26eeaf2eab6",
+          "ac2313d9c734ae547f61ae8d12e477e57902881cc4d95ddff4d42c0f64bc290f"
+        ],
+        "purpose": "Check exact root namespace as a separate condition from parseability.",
+        "finding": "Q{urn:orders}batch excludes the other-namespace D4 while retaining the legitimate empty D3. Neither a similar local name nor an empty row result establishes the intended document scope."
+      }
+    },
+    {
+      "object": {
+        "schema": "main",
+        "name": "xpath_number"
+      },
+      "notebook": "01_preserve_documents_when_shredding_xml.ipynb",
+      "sql": [
+        {
+          "cell": "d1c352de",
+          "reference": "xslt.main.xpath_number"
+        }
+      ],
+      "narrative_cells": [
+        "84b6d77a",
+        "b99bd9e9"
+      ],
+      "result_cells": [
+        "d1c352de",
+        "3c65aa4f",
+        "961307d9"
+      ],
+      "interpretation_cells": [
+        "84b6d77a",
+        "b99bd9e9"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root",
+        "reviewed_at": "2026-11-14T21:03:35.495355+00:00",
+        "notebook_sha256": "3ab67a133add32ab1a5691f1b203d94b83ad4086773568b2405e27cdcbc3771c",
+        "catalog_sha256": [
+          "f7761bc3b391c0c23c7ef5ecb30a0c03d50e9cdfd7bea3d879a2c26eeaf2eab6",
+          "ac2313d9c734ae547f61ae8d12e477e57902881cc4d95ddff4d42c0f64bc290f"
+        ],
+        "purpose": "Measure namespace-matched item population and compare it with a broader wildcard count.",
+        "finding": "D2 contains4intended items versus5wildcard items because telemetry shares the localname. Reconciliation verifies6shredded items match the intended namespace population and excludes noise."
+      }
+    },
+    {
+      "object": {
+        "schema": "main",
+        "name": "xslt"
+      },
+      "notebook": "01_preserve_documents_when_shredding_xml.ipynb",
+      "sql": [
+        {
+          "cell": "5a0329bd",
+          "reference": "xslt.main.xslt"
+        }
+      ],
+      "narrative_cells": [
+        "819d57b6"
+      ],
+      "result_cells": [
+        "5a0329bd",
+        "3c65aa4f",
+        "961307d9"
+      ],
+      "interpretation_cells": [
+        "819d57b6",
+        "b99bd9e9"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root",
+        "reviewed_at": "2026-11-14T21:03:35.495355+00:00",
+        "notebook_sha256": "3ab67a133add32ab1a5691f1b203d94b83ad4086773568b2405e27cdcbc3771c",
+        "catalog_sha256": [
+          "f7761bc3b391c0c23c7ef5ecb30a0c03d50e9cdfd7bea3d879a2c26eeaf2eab6",
+          "ac2313d9c734ae547f61ae8d12e477e57902881cc4d95ddff4d42c0f64bc290f"
+        ],
+        "purpose": "Normalize item structure with a constant, explicitly namespace-bound stylesheet.",
+        "finding": "Transformation preserves SKU,sequence,rawquantity attributes and absent quantities; emptybatch becomes emptyrows. It neither validates a schema nor invents zero. Normalized records remain fixed when the reporting minimum changes."
+      }
+    },
+    {
+      "object": {
+        "schema": "main",
+        "name": "xpath_array"
+      },
+      "notebook": "01_preserve_documents_when_shredding_xml.ipynb",
+      "sql": [
+        {
+          "cell": "c9d095e6",
+          "reference": "xslt.main.xpath_array"
+        }
+      ],
+      "narrative_cells": [
+        "c77348a2"
+      ],
+      "result_cells": [
+        "c9d095e6",
+        "3c65aa4f",
+        "961307d9"
+      ],
+      "interpretation_cells": [
+        "c77348a2",
+        "b99bd9e9"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root",
+        "reviewed_at": "2026-11-14T21:03:35.495355+00:00",
+        "notebook_sha256": "3ab67a133add32ab1a5691f1b203d94b83ad4086773568b2405e27cdcbc3771c",
+        "catalog_sha256": [
+          "f7761bc3b391c0c23c7ef5ecb30a0c03d50e9cdfd7bea3d879a2c26eeaf2eab6",
+          "ac2313d9c734ae547f61ae8d12e477e57902881cc4d95ddff4d42c0f64bc290f"
+        ],
+        "purpose": "Serialize each normalized row before expanding an array with ordinality.",
+        "finding": "Explicit serialize(.) preserves markup/attributes that element string-values would lose. Document ID plus localordinality identifies6rows. The emptybatch contributes no rows but remains visible through the document audit."
+      }
+    },
+    {
+      "object": {
+        "schema": "main",
+        "name": "xpath_string"
+      },
+      "notebook": "01_preserve_documents_when_shredding_xml.ipynb",
+      "sql": [
+        {
+          "cell": "c9d095e6",
+          "reference": "xslt.main.xpath_string"
+        }
+      ],
+      "narrative_cells": [
+        "c77348a2",
+        "b99bd9e9"
+      ],
+      "result_cells": [
+        "c9d095e6",
+        "3c65aa4f",
+        "d70d7b8c",
+        "961307d9"
+      ],
+      "interpretation_cells": [
+        "b99bd9e9",
+        "d70d7b8c"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root",
+        "reviewed_at": "2026-11-14T21:03:35.495355+00:00",
+        "notebook_sha256": "3ab67a133add32ab1a5691f1b203d94b83ad4086773568b2405e27cdcbc3771c",
+        "catalog_sha256": [
+          "f7761bc3b391c0c23c7ef5ecb30a0c03d50e9cdfd7bea3d879a2c26eeaf2eab6",
+          "ac2313d9c734ae547f61ae8d12e477e57902881cc4d95ddff4d42c0f64bc290f"
+        ],
+        "purpose": "Extract original SKU and quantity text before applying a strict SQL type/selection contract.",
+        "finding": "Missing peachquantity stays NULL, plum badtext remains visible and unknown, apple0 is valid. Minimum1\u21923 changes selected3rows/10units to2rows/8units while6documents,6items and2invalid quantities stay fixed."
+      }
+    },
+    {
+      "object": {
+        "schema": "main",
+        "name": "xpath_nodes"
+      },
+      "notebook": "02_same_units_different_row_counts.ipynb",
+      "sql": [
+        {
+          "cell": "row-functions",
+          "reference": "xslt.main.xpath_nodes"
+        }
+      ],
+      "narrative_cells": [
+        "query-story",
+        "check-story"
+      ],
+      "result_cells": [
+        "row-functions",
+        "checks-prose"
+      ],
+      "interpretation_cells": [
+        "query-story",
+        "check-story",
+        "experiment"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root",
+        "reviewed_at": "2026-11-14T21:03:35.495355+00:00",
+        "notebook_sha256": "8628766bd21da762d05d5d9e143691dac33418ceabfe27de85d7362854b01b6b",
+        "catalog_sha256": [
+          "f7761bc3b391c0c23c7ef5ecb30a0c03d50e9cdfd7bea3d879a2c26eeaf2eab6",
+          "ac2313d9c734ae547f61ae8d12e477e57902881cc4d95ddff4d42c0f64bc290f"
+        ],
+        "purpose": "Return serialized matches as rows while preserving carried source line IDs.",
+        "finding": "XPath and XQuery rowfunctions agree on typed identity,SKU,quantity,resultposition. Excluding explicitzero removesL2 and renumbers subsequent resultpositions, while sourceIDs remain fixed. Serialization keeps elementattributes."
+      }
+    },
+    {
+      "object": {
+        "schema": "main",
+        "name": "xquery_rows"
+      },
+      "notebook": "02_same_units_different_row_counts.ipynb",
+      "sql": [
+        {
+          "cell": "row-functions",
+          "reference": "xslt.main.xquery_rows"
+        }
+      ],
+      "narrative_cells": [
+        "query-story",
+        "chart-story"
+      ],
+      "result_cells": [
+        "row-functions",
+        "plot",
+        "checks-prose"
+      ],
+      "interpretation_cells": [
+        "query-story",
+        "chart-story",
+        "experiment"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root",
+        "reviewed_at": "2026-11-14T21:03:35.495355+00:00",
+        "notebook_sha256": "8628766bd21da762d05d5d9e143691dac33418ceabfe27de85d7362854b01b6b",
+        "catalog_sha256": [
+          "f7761bc3b391c0c23c7ef5ecb30a0c03d50e9cdfd7bea3d879a2c26eeaf2eab6",
+          "ac2313d9c734ae547f61ae8d12e477e57902881cc4d95ddff4d42c0f64bc290f"
+        ],
+        "purpose": "Use a FLWOR sequence for one-row-per-selected-line results and retain duplicate categories.",
+        "finding": "Two pearlines remain distinct and total8units. Applelinecount2\u21921 whenzero is excluded while appleunits remain2. Typed bidirectional EXCEPT establishes rowequivalence, not merely equality of aggregated totals."
+      }
+    },
+    {
+      "object": {
+        "schema": "main",
+        "name": "xquery"
+      },
+      "notebook": "02_same_units_different_row_counts.ipynb",
+      "sql": [
+        {
+          "cell": "scalar-query",
+          "reference": "xslt.main.xquery"
+        }
+      ],
+      "narrative_cells": [
+        "scalar-story"
+      ],
+      "result_cells": [
+        "scalar-interpretation",
+        "plot",
+        "checks-prose"
+      ],
+      "interpretation_cells": [
+        "scalar-story",
+        "scalar-interpretation",
+        "experiment"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root",
+        "reviewed_at": "2026-11-14T21:03:35.495355+00:00",
+        "notebook_sha256": "8628766bd21da762d05d5d9e143691dac33418ceabfe27de85d7362854b01b6b",
+        "catalog_sha256": [
+          "f7761bc3b391c0c23c7ef5ecb30a0c03d50e9cdfd7bea3d879a2c26eeaf2eab6",
+          "ac2313d9c734ae547f61ae8d12e477e57902881cc4d95ddff4d42c0f64bc290f"
+        ],
+        "purpose": "Produce one serialized summary and reconcile its row/unit counts to the actual row relation.",
+        "finding": "The scalar reports4\u21923selected lines but10knownunits inbothviews. Fullsource5 andmissingquantity1 stayfixed. Counts andunits reconcile with typedrowaggregates; a matchingunit total alone cannot establish matching source selection."
+      }
+    }
+  ]
+}

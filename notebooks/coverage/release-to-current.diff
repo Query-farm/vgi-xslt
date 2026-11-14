@@ -1,0 +1,233 @@
+diff --git a/vgi_xslt/composed.py b/vgi_xslt/composed.py
+new file mode 100644
+index 0000000..2d779a6
+--- /dev/null
++++ b/vgi_xslt/composed.py
+@@ -0,0 +1,72 @@
++"""Composed example queries that combine several of the worker's functions.
++
++Each constant is a ``(description, sql)`` pair defined exactly once and reused by
++the schema-level ``vgi.example_queries`` list (``worker.py``) and by the example
++list of the object that drives the query (``scalars.py`` / ``tables.py``). The
++SQL is offline and deterministic; ``test/sql/composed.test`` pins every result.
++"""
++
++from __future__ import annotations
++
++# xquery_rows (one serialized <book> per row) -> xpath_string / xpath_number per row.
++RECORDS_TO_COLUMNS = (
++    "Explode a catalog into one serialized <book> per row with xquery_rows, then pull each "
++    "book's title, lang attribute and numeric price out of that row with xpath_string and "
++    "xpath_number (Dune/en/9.99, Candide/fr/7.5, Emma/en/12.0).",
++    "SELECT r.seq, xslt.main.xpath_string(r.value, '/book/title') AS title, "
++    "xslt.main.xpath_string(r.value, 'string(/book/@lang)') AS lang, "
++    "xslt.main.xpath_number(r.value, '/book/price') AS price "
++    "FROM xslt.main.xquery_rows("
++    '\'<catalog><book lang="en"><title>Dune</title><price>9.99</price></book>'
++    '<book lang="fr"><title>Candide</title><price>7.5</price></book>'
++    '<book lang="en"><title>Emma</title><price>12</price></book></catalog>\', '
++    "'for $b in /catalog/book return serialize($b)') AS r ORDER BY r.seq",
++)
++
++# is_well_formed filter -> xpath_string + xpath_number over the surviving rows.
++VALIDATE_THEN_EXTRACT = (
++    "Skip malformed documents with is_well_formed, then read each remaining order's id "
++    "attribute and customer with xpath_string and its total (sum of qty * price over its "
++    "lines) with xpath_number; the malformed order C3 is dropped (A1/acme/21.5, B7/globex/38.0).",
++    "WITH docs(id, doc) AS (VALUES "
++    '(1, \'<order id="A1"><customer>acme</customer><line sku="bolt" qty="2" price="9.5"/>'
++    '<line sku="nut" qty="10" price="0.25"/></order>\'), '
++    '(2, \'<order id="B7"><customer>globex</customer><line sku="bolt" qty="4" price="9.5"/></order>\'), '
++    "(3, '<order id=\"C3\"><customer>initech</order>')) "
++    "SELECT id, xslt.main.xpath_string(doc, 'string(/order/@id)') AS order_id, "
++    "xslt.main.xpath_string(doc, '/order/customer') AS customer, "
++    "xslt.main.xpath_number(doc, 'sum(//line/(@qty * @price))') AS total "
++    "FROM docs WHERE xslt.main.is_well_formed(doc) ORDER BY id",
++)
++
++# xpath_array + UNNEST (line rows, zipped by position) tagged with xpath_string, then aggregated.
++SHRED_AND_AGGREGATE = (
++    "Shred the lines of a column of order documents with two position-aligned "
++    "UNNEST(xpath_array(...)) calls, tag each line with its order's customer via xpath_string, "
++    "and total the quantity per SKU (bolt 6 from acme,globex; nut 10 from acme).",
++    "WITH docs(id, doc) AS (VALUES "
++    '(1, \'<order id="A1"><customer>acme</customer><line sku="bolt" qty="2"/>'
++    '<line sku="nut" qty="10"/></order>\'), '
++    '(2, \'<order id="B7"><customer>globex</customer><line sku="bolt" qty="4"/></order>\')), '
++    "lines AS (SELECT xslt.main.xpath_string(doc, '/order/customer') AS customer, "
++    "UNNEST(xslt.main.xpath_array(doc, '//line/@sku')) AS sku, "
++    "CAST(UNNEST(xslt.main.xpath_array(doc, '//line/@qty')) AS INTEGER) AS qty FROM docs) "
++    "SELECT sku, CAST(SUM(qty) AS BIGINT) AS total_qty, "
++    "string_agg(customer, ',' ORDER BY customer) AS customers "
++    "FROM lines GROUP BY sku ORDER BY sku",
++)
++
++# xslt output (a normalized document) fed straight into the xpath_nodes table function.
++TRANSFORM_THEN_SHRED = (
++    "Normalize a feed with an XSLT stylesheet (one upper-cased <item> per <entry>), then shred "
++    "the transformed output into numbered rows with xpath_nodes (1 A, 2 B).",
++    "SELECT seq, value FROM xslt.main.xpath_nodes(xslt.main.xslt("
++    "'<feed><entry><t>a</t></entry><entry><t>b</t></entry></feed>', "
++    '\'<xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">'
++    '<xsl:template match="/"><items><xsl:for-each select="//entry">'
++    '<item><xsl:value-of select="upper-case(t)"/></item></xsl:for-each></items>'
++    "</xsl:template></xsl:stylesheet>'), '//item') ORDER BY seq",
++)
++
++#: Every composed example, in the order they appear in the schema-level list.
++ALL = (RECORDS_TO_COLUMNS, VALIDATE_THEN_EXTRACT, SHRED_AND_AGGREGATE, TRANSFORM_THEN_SHRED)
+diff --git a/vgi_xslt/scalars.py b/vgi_xslt/scalars.py
+index 2574cc4..2437bb7 100644
+--- a/vgi_xslt/scalars.py
++++ b/vgi_xslt/scalars.py
+@@ -37,7 +37,7 @@ from vgi.arguments import Param, Returns
+ from vgi.metadata import FunctionExample
+ from vgi.scalar_function import ScalarFunction
+ 
+-from . import engine
++from . import composed, engine
+ from .meta import object_tags
+ 
+ # VGI509: a guaranteed-runnable, self-contained executable example shipped on at
+@@ -57,7 +57,12 @@ _XSLT_EXECUTABLE_EXAMPLES = json.dumps(
+         {
+             "description": _XSLT_EXAMPLE_DESC,
+             "sql": _XSLT_EXAMPLE_SQL,
+-        }
++        },
++        # Composed: the xslt output feeds the xpath_nodes table function.
++        {
++            "description": composed.TRANSFORM_THEN_SHRED[0],
++            "sql": composed.TRANSFORM_THEN_SHRED[1],
++        },
+     ]
+ )
+ 
+@@ -431,6 +436,7 @@ class XPathArrayFunction(ScalarFunction):
+                     "Shred all matching nodes into rows with UNNEST.",
+                     "SELECT UNNEST(xslt.main.xpath_array('<r><i>a</i><i>b</i></r>', '//i'))",
+                 ),
++                composed.SHRED_AND_AGGREGATE,
+             ],
+         )
+         examples = [
+@@ -438,6 +444,7 @@ class XPathArrayFunction(ScalarFunction):
+                 sql="SELECT UNNEST(xslt.main.xpath_array('<r><i>a</i><i>b</i></r>', '//i'))",
+                 description="Shred all matching nodes into rows",
+             ),
++            FunctionExample(sql=composed.SHRED_AND_AGGREGATE[1], description=composed.SHRED_AND_AGGREGATE[0]),
+         ]
+ 
+     @classmethod
+@@ -582,6 +589,7 @@ class IsWellFormedFunction(ScalarFunction):
+                     "Check whether a string is well-formed XML.",
+                     "SELECT xslt.main.is_well_formed('<a></a>')",
+                 ),
++                composed.VALIDATE_THEN_EXTRACT,
+             ],
+         )
+         examples = [
+@@ -589,6 +597,7 @@ class IsWellFormedFunction(ScalarFunction):
+                 sql="SELECT xslt.main.is_well_formed('<a></a>')",
+                 description="Check whether a string is well-formed XML",
+             ),
++            FunctionExample(sql=composed.VALIDATE_THEN_EXTRACT[1], description=composed.VALIDATE_THEN_EXTRACT[0]),
+         ]
+ 
+     @classmethod
+diff --git a/vgi_xslt/tables.py b/vgi_xslt/tables.py
+index 6c703f1..480a7d2 100644
+--- a/vgi_xslt/tables.py
++++ b/vgi_xslt/tables.py
+@@ -31,7 +31,7 @@ from vgi.table_function import (
+ )
+ from vgi_rpc.rpc import OutputCollector
+ 
+-from . import engine
++from . import composed, engine
+ from .meta import object_tags
+ from .schema_utils import field
+ 
+@@ -128,6 +128,7 @@ class XPathNodesFunction(TableFunctionGenerator[_DocExprArgs]):
+                         "Number each XPath match and return it in document order.",
+                         "SELECT seq, value FROM xslt.main.xpath_nodes('<r><i>a</i><i>b</i></r>', '//i') ORDER BY seq",
+                     ),
++                    composed.TRANSFORM_THEN_SHRED,
+                 ],
+             ),
+             "vgi.result_columns_schema": _SEQ_VALUE_COLUMNS_SCHEMA,
+@@ -137,6 +138,7 @@ class XPathNodesFunction(TableFunctionGenerator[_DocExprArgs]):
+                 sql="SELECT seq, value FROM xslt.main.xpath_nodes('<r><i>a</i><i>b</i></r>', '//i') ORDER BY seq",
+                 description="Number each XPath match and return it in document order",
+             ),
++            FunctionExample(sql=composed.TRANSFORM_THEN_SHRED[1], description=composed.TRANSFORM_THEN_SHRED[0]),
+         ]
+ 
+     @classmethod
+@@ -222,6 +224,7 @@ class XQueryRowsFunction(TableFunctionGenerator[_DocExprArgs]):
+                         "SELECT seq, value FROM xslt.main.xquery_rows("
+                         "'<r><i>1</i><i>2</i></r>', 'for $x in //i return $x*2') ORDER BY seq",
+                     ),
++                    composed.RECORDS_TO_COLUMNS,
+                 ],
+             ),
+             "vgi.result_columns_schema": _SEQ_VALUE_COLUMNS_SCHEMA,
+@@ -232,6 +235,7 @@ class XQueryRowsFunction(TableFunctionGenerator[_DocExprArgs]):
+                 "'<r><i>1</i><i>2</i></r>', 'for $x in //i return $x*2') ORDER BY seq",
+                 description="Explode an XQuery FLWOR result into rows",
+             ),
++            FunctionExample(sql=composed.RECORDS_TO_COLUMNS[1], description=composed.RECORDS_TO_COLUMNS[0]),
+         ]
+ 
+     @classmethod
+diff --git a/vgi_xslt/worker.py b/vgi_xslt/worker.py
+index 6c0d328..9fb2307 100644
+--- a/vgi_xslt/worker.py
++++ b/vgi_xslt/worker.py
+@@ -39,6 +39,7 @@ import json
+ from vgi import Worker
+ from vgi.catalog import Catalog, ConstraintInfo, Schema, Table, constraint_record
+ 
++from vgi_xslt import composed
+ from vgi_xslt.scalars import SCALAR_FUNCTIONS
+ from vgi_xslt.tables import TABLE_FUNCTIONS, SaxonInfoFunction
+ 
+@@ -214,6 +215,8 @@ _SCHEMA_EXAMPLE_QUERIES = json.dumps(
+             "description": "Explode a document into numbered (seq, value) rows in document order.",
+             "sql": "SELECT seq, value FROM xslt.main.xpath_nodes('<r><i>a</i><i>b</i></r>', '//i') ORDER BY seq",
+         },
++        # Composed examples: several of the worker's functions in one query.
++        *({"description": d, "sql": q} for d, q in composed.ALL),
+     ]
+ )
+ 
+@@ -338,6 +341,29 @@ _AGENT_TEST_TASKS = json.dumps(
+                 f"Stylesheet:\n{_TASK_STYLESHEET}"
+             ),
+         },
++        {
++            "name": "well-formed-orders-revenue",
++            "prompt": (
++                "Three purchase-order XML documents arrived: "
++                '\'<po no="P-1"><item qty="3" price="4"/><item qty="1" price="2.5"/></po>\', '
++                '\'<po no="P-2"><item qty="2" price="10"/></po>\' and '
++                '\'<po no="P-3"><item qty="1" price="5"></po>\'. Write and run a single SQL '
++                "query that ignores any document that is not well-formed XML and, for each remaining "
++                "one, computes its order total (the sum of qty times price over its <item> elements). "
++                "Return a single row with two columns: how many orders are well-formed (orders, "
++                "BIGINT) and the combined total of those orders (revenue, DOUBLE)."
++            ),
++        },
++        {
++            "name": "books-over-ten",
++            "prompt": (
++                "Given the XML '<shelf><book><title>Dune</title><price>9.99</price></book>"
++                "<book><title>Emma</title><price>12.5</price></book>"
++                "<book><title>Ulysses</title><price>15</price></book></shelf>', write and run a "
++                "single SQL query that returns one row per <book> whose price is greater than 10, "
++                "with two columns: the book's title (VARCHAR) and its price (DOUBLE), ordered by price."
++            ),
++        },
+         {
+             "name": "engine-supports-xsd-validation",
+             "prompt": (

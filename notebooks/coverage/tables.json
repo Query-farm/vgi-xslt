@@ -1,0 +1,51 @@
+{
+  "query": "SELECT * FROM duckdb_tables() WHERE database_name='xslt' ORDER BY schema_name,table_name",
+  "columns": [
+    "database_name",
+    "database_oid",
+    "schema_name",
+    "schema_oid",
+    "table_name",
+    "table_oid",
+    "comment",
+    "tags",
+    "internal",
+    "temporary",
+    "has_primary_key",
+    "estimated_size",
+    "column_count",
+    "index_count",
+    "check_constraint_count",
+    "sql"
+  ],
+  "rows": [
+    [
+      "xslt",
+      22592,
+      "main",
+      22593,
+      "saxon_info",
+      22795,
+      "One row describing the bundled SaxonC engine and its capabilities.",
+      {
+        "category": "xml-processing",
+        "domain": "xml",
+        "topic": "xslt-xquery-xpath",
+        "vgi.category": "reference",
+        "vgi.doc_llm": "## saxon_info (table)\n\nA single-row, directly-browsable table describing the SaxonC engine bundled with this worker \u2014 its version and edition, the XSLT/XQuery/XPath language levels it implements, and whether it is schema-aware.\n\n**When to use:** learn the engine's capabilities before relying on them. The `schema_aware` column is the key signal: it is always false on the Home Edition, so there is no XSD validation. The table has no arguments and a single row of engine facts, so it is directly browsable.\n\n**Columns:** `version`, `edition`, `xslt_version`, `xquery_version`, `xpath_version` (all `VARCHAR`) and `schema_aware` (`BOOLEAN`).",
+        "vgi.doc_md": "# saxon_info\n\nSingle-row reference table describing the bundled SaxonC engine and its capabilities.\n\n## Columns\n\n- `version` \u2014 SaxonC version string.\n- `edition` \u2014 Saxon edition (HE = free Home Edition).\n- `xslt_version` / `xquery_version` / `xpath_version` \u2014 implemented language levels.\n- `schema_aware` \u2014 whether XSD validation is available (always false on HE).\n\n## Notes\n\n- Always one row; no arguments, so it is directly browsable.",
+        "vgi.example_queries": "[{\"description\": \"Read the engine version and whether XSD validation is available.\", \"sql\": \"SELECT version, schema_aware FROM xslt.main.saxon_info\"}, {\"description\": \"Confirm the XSLT and XQuery language levels the engine implements.\", \"sql\": \"SELECT xslt_version, xquery_version FROM xslt.main.saxon_info\"}]",
+        "vgi.keywords": "[\"saxon\", \"capabilities\", \"engine\", \"version\", \"edition\", \"schema aware\", \"reference\", \"xslt\"]",
+        "vgi.title": "Saxon Engine Capabilities Table"
+      },
+      false,
+      false,
+      true,
+      0,
+      6,
+      1,
+      0,
+      "CREATE TABLE saxon_info(\"version\" VARCHAR, edition VARCHAR NOT NULL, xslt_version VARCHAR NOT NULL, xquery_version VARCHAR NOT NULL, xpath_version VARCHAR NOT NULL, schema_aware BOOLEAN NOT NULL, PRIMARY KEY(\"version\"));"
+    ]
+  ]
+}

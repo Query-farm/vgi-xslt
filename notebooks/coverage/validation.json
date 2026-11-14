@@ -1,0 +1,726 @@
+{
+  "schema_version": 1,
+  "status": "met",
+  "meets_target": true,
+  "catalogs": {
+    "released": {
+      "catalog_status": "verified",
+      "revision": "v0.4.0",
+      "catalog_sha256": "f7761bc3b391c0c23c7ef5ecb30a0c03d50e9cdfd7bea3d879a2c26eeaf2eab6",
+      "collection_reconciled": true,
+      "denominator": 10,
+      "observed_objects": 10,
+      "required": 10,
+      "verified_count": 10,
+      "candidate_count": 0,
+      "fraction": 1.0,
+      "meets_target": true,
+      "exact_runtime_count": 10,
+      "runtime_revisions": [
+        "v0.4.0"
+      ],
+      "covered": [
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "is_well_formed"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "saxon_info"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "xpath_array"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "xpath_boolean"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "xpath_nodes"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "xpath_number"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "xpath_string"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "xquery"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "xquery_rows"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "xslt"
+        }
+      ],
+      "uncovered": [],
+      "objects": [
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "is_well_formed",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "is_well_formed(VARCHAR) -> BOOLEAN"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "saxon_info",
+          "kinds": [
+            "function",
+            "table"
+          ],
+          "signatures": [
+            "TABLE",
+            "saxon_info() -> None"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "xpath_array",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "xpath_array(VARCHAR, VARCHAR) -> VARCHAR[]"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "xpath_boolean",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "xpath_boolean(VARCHAR, VARCHAR) -> BOOLEAN"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "xpath_nodes",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "xpath_nodes(VARCHAR, VARCHAR) -> None"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "xpath_number",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "xpath_number(VARCHAR, VARCHAR) -> DOUBLE"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "xpath_string",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "xpath_string(VARCHAR, VARCHAR) -> VARCHAR"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "xquery",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "xquery(VARCHAR, VARCHAR) -> VARCHAR"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "xquery_rows",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "xquery_rows(VARCHAR, VARCHAR) -> None"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "xslt",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "xslt(VARCHAR, VARCHAR) -> VARCHAR"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        }
+      ],
+      "issues": []
+    },
+    "current": {
+      "catalog_status": "verified",
+      "revision": "da839290fd641cb75603336561c7a4d1aec3afbd",
+      "catalog_sha256": "ac2313d9c734ae547f61ae8d12e477e57902881cc4d95ddff4d42c0f64bc290f",
+      "collection_reconciled": false,
+      "denominator": 10,
+      "observed_objects": 10,
+      "required": 10,
+      "verified_count": 10,
+      "candidate_count": 0,
+      "fraction": 1.0,
+      "meets_target": true,
+      "exact_runtime_count": 0,
+      "runtime_revisions": [
+        "v0.4.0"
+      ],
+      "covered": [
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "is_well_formed"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "saxon_info"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "xpath_array"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "xpath_boolean"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "xpath_nodes"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "xpath_number"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "xpath_string"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "xquery"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "xquery_rows"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "xslt"
+        }
+      ],
+      "uncovered": [],
+      "objects": [
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "is_well_formed",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "is_well_formed(VARCHAR) -> BOOLEAN"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "saxon_info",
+          "kinds": [
+            "function",
+            "table"
+          ],
+          "signatures": [
+            "TABLE",
+            "saxon_info() -> None"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "xpath_array",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "xpath_array(VARCHAR, VARCHAR) -> VARCHAR[]"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "xpath_boolean",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "xpath_boolean(VARCHAR, VARCHAR) -> BOOLEAN"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "xpath_nodes",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "xpath_nodes(VARCHAR, VARCHAR) -> None"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "xpath_number",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "xpath_number(VARCHAR, VARCHAR) -> DOUBLE"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "xpath_string",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "xpath_string(VARCHAR, VARCHAR) -> VARCHAR"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "xquery",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "xquery(VARCHAR, VARCHAR) -> VARCHAR"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "xquery_rows",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "xquery_rows(VARCHAR, VARCHAR) -> None"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "xslt",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "xslt(VARCHAR, VARCHAR) -> VARCHAR"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        }
+      ],
+      "issues": []
+    }
+  },
+  "interface_drift": {
+    "known": true,
+    "current_only": [],
+    "released_only": [],
+    "changed": []
+  },
+  "notebooks": {
+    "01_preserve_documents_when_shredding_xml.ipynb": {
+      "verified": true,
+      "issues": []
+    },
+    "02_same_units_different_row_counts.ipynb": {
+      "verified": true,
+      "issues": []
+    }
+  },
+  "examples": [
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "saxon_info"
+      },
+      "notebook": "01_preserve_documents_when_shredding_xml.ipynb",
+      "runtime_revision": "v0.4.0",
+      "runtime_catalog_sha256": "f7761bc3b391c0c23c7ef5ecb30a0c03d50e9cdfd7bea3d879a2c26eeaf2eab6"
+    },
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "is_well_formed"
+      },
+      "notebook": "01_preserve_documents_when_shredding_xml.ipynb",
+      "runtime_revision": "v0.4.0",
+      "runtime_catalog_sha256": "f7761bc3b391c0c23c7ef5ecb30a0c03d50e9cdfd7bea3d879a2c26eeaf2eab6"
+    },
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "xpath_boolean"
+      },
+      "notebook": "01_preserve_documents_when_shredding_xml.ipynb",
+      "runtime_revision": "v0.4.0",
+      "runtime_catalog_sha256": "f7761bc3b391c0c23c7ef5ecb30a0c03d50e9cdfd7bea3d879a2c26eeaf2eab6"
+    },
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "xpath_number"
+      },
+      "notebook": "01_preserve_documents_when_shredding_xml.ipynb",
+      "runtime_revision": "v0.4.0",
+      "runtime_catalog_sha256": "f7761bc3b391c0c23c7ef5ecb30a0c03d50e9cdfd7bea3d879a2c26eeaf2eab6"
+    },
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "xslt"
+      },
+      "notebook": "01_preserve_documents_when_shredding_xml.ipynb",
+      "runtime_revision": "v0.4.0",
+      "runtime_catalog_sha256": "f7761bc3b391c0c23c7ef5ecb30a0c03d50e9cdfd7bea3d879a2c26eeaf2eab6"
+    },
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "xpath_array"
+      },
+      "notebook": "01_preserve_documents_when_shredding_xml.ipynb",
+      "runtime_revision": "v0.4.0",
+      "runtime_catalog_sha256": "f7761bc3b391c0c23c7ef5ecb30a0c03d50e9cdfd7bea3d879a2c26eeaf2eab6"
+    },
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "xpath_string"
+      },
+      "notebook": "01_preserve_documents_when_shredding_xml.ipynb",
+      "runtime_revision": "v0.4.0",
+      "runtime_catalog_sha256": "f7761bc3b391c0c23c7ef5ecb30a0c03d50e9cdfd7bea3d879a2c26eeaf2eab6"
+    },
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "xpath_nodes"
+      },
+      "notebook": "02_same_units_different_row_counts.ipynb",
+      "runtime_revision": "v0.4.0",
+      "runtime_catalog_sha256": "f7761bc3b391c0c23c7ef5ecb30a0c03d50e9cdfd7bea3d879a2c26eeaf2eab6"
+    },
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "xquery_rows"
+      },
+      "notebook": "02_same_units_different_row_counts.ipynb",
+      "runtime_revision": "v0.4.0",
+      "runtime_catalog_sha256": "f7761bc3b391c0c23c7ef5ecb30a0c03d50e9cdfd7bea3d879a2c26eeaf2eab6"
+    },
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "xquery"
+      },
+      "notebook": "02_same_units_different_row_counts.ipynb",
+      "runtime_revision": "v0.4.0",
+      "runtime_catalog_sha256": "f7761bc3b391c0c23c7ef5ecb30a0c03d50e9cdfd7bea3d879a2c26eeaf2eab6"
+    }
+  ],
+  "issues": []
+}
