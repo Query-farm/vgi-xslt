@@ -342,16 +342,16 @@ _AGENT_TEST_TASKS = json.dumps(
             ),
         },
         {
-            "name": "total-well-formed-orders",
+            "name": "well-formed-orders-revenue",
             "prompt": (
                 "Three purchase-order XML documents arrived: "
                 '\'<po no="P-1"><item qty="3" price="4"/><item qty="1" price="2.5"/></po>\', '
                 '\'<po no="P-2"><item qty="2" price="10"/></po>\' and '
                 '\'<po no="P-3"><item qty="1" price="5"></po>\'. Write and run a single SQL '
                 "query that ignores any document that is not well-formed XML and, for each remaining "
-                "one, returns two columns: the <po> element's no attribute (order_no, VARCHAR) and the "
-                "order total, the sum of qty times price over its <item> elements (total, DOUBLE), "
-                "ordered by order_no."
+                "one, computes its order total (the sum of qty times price over its <item> elements). "
+                "Return a single row with two columns: how many orders are well-formed (orders, "
+                "BIGINT) and the combined total of those orders (revenue, DOUBLE)."
             ),
         },
         {

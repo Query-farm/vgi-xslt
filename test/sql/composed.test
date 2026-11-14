@@ -42,12 +42,11 @@ SELECT seq, value FROM xslt.main.xpath_nodes(xslt.main.xslt('<feed><entry><t>a</
 1	A
 2	B
 
-# agent-task grader: total-well-formed-orders
+# agent-task grader: well-formed-orders-revenue
 query II
-WITH docs(doc) AS (VALUES ('<po no="P-1"><item qty="3" price="4"/><item qty="1" price="2.5"/></po>'), ('<po no="P-2"><item qty="2" price="10"/></po>'), ('<po no="P-3"><item qty="1" price="5"></po>')) SELECT xslt.main.xpath_string(doc, 'string(/po/@no)') AS order_no, xslt.main.xpath_number(doc, 'sum(//item/(@qty * @price))') AS total FROM docs WHERE xslt.main.is_well_formed(doc) ORDER BY order_no;
+WITH docs(doc) AS (VALUES ('<po no="P-1"><item qty="3" price="4"/><item qty="1" price="2.5"/></po>'), ('<po no="P-2"><item qty="2" price="10"/></po>'), ('<po no="P-3"><item qty="1" price="5"></po>')) SELECT count(*) AS orders, sum(xslt.main.xpath_number(doc, 'sum(//item/(@qty * @price))')) AS revenue FROM docs WHERE xslt.main.is_well_formed(doc);
 ----
-P-1	14.5
-P-2	20.0
+2	34.5
 
 # agent-task grader: books-over-ten
 query II
