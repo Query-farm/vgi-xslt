@@ -170,6 +170,20 @@ Two complementary tools:
   SELECT seq, value FROM xpath_nodes('<r><i>a</i><i>b</i></r>', '//i');
   ```
 
+* **Combine them** — explode a document into one serialized record per row,
+  then pull fields out of each record with the XPath scalars:
+
+  ```sql
+  SELECT r.seq,
+         xpath_string(r.value, '/book/title') AS title,
+         xpath_number(r.value, '/book/price') AS price
+  FROM xquery_rows(
+    '<catalog><book><title>Dune</title><price>9.99</price></book><book><title>Emma</title><price>12</price></book></catalog>',
+    'for $b in /catalog/book return serialize($b)'
+  ) AS r
+  ORDER BY r.seq;   -- (1,'Dune',9.99), (2,'Emma',12.0)
+  ```
+
 ## Dependencies & licensing
 
 | Component | License | Notes |

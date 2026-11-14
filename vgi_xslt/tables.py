@@ -31,7 +31,7 @@ from vgi.table_function import (
 )
 from vgi_rpc.rpc import OutputCollector
 
-from . import engine
+from . import composed, engine
 from .meta import object_tags
 from .schema_utils import field
 
@@ -128,6 +128,7 @@ class XPathNodesFunction(TableFunctionGenerator[_DocExprArgs]):
                         "Number each XPath match and return it in document order.",
                         "SELECT seq, value FROM xslt.main.xpath_nodes('<r><i>a</i><i>b</i></r>', '//i') ORDER BY seq",
                     ),
+                    composed.TRANSFORM_THEN_SHRED,
                 ],
             ),
             "vgi.result_columns_schema": _SEQ_VALUE_COLUMNS_SCHEMA,
@@ -137,6 +138,7 @@ class XPathNodesFunction(TableFunctionGenerator[_DocExprArgs]):
                 sql="SELECT seq, value FROM xslt.main.xpath_nodes('<r><i>a</i><i>b</i></r>', '//i') ORDER BY seq",
                 description="Number each XPath match and return it in document order",
             ),
+            FunctionExample(sql=composed.TRANSFORM_THEN_SHRED[1], description=composed.TRANSFORM_THEN_SHRED[0]),
         ]
 
     @classmethod
@@ -222,6 +224,7 @@ class XQueryRowsFunction(TableFunctionGenerator[_DocExprArgs]):
                         "SELECT seq, value FROM xslt.main.xquery_rows("
                         "'<r><i>1</i><i>2</i></r>', 'for $x in //i return $x*2') ORDER BY seq",
                     ),
+                    composed.RECORDS_TO_COLUMNS,
                 ],
             ),
             "vgi.result_columns_schema": _SEQ_VALUE_COLUMNS_SCHEMA,
@@ -232,6 +235,7 @@ class XQueryRowsFunction(TableFunctionGenerator[_DocExprArgs]):
                 "'<r><i>1</i><i>2</i></r>', 'for $x in //i return $x*2') ORDER BY seq",
                 description="Explode an XQuery FLWOR result into rows",
             ),
+            FunctionExample(sql=composed.RECORDS_TO_COLUMNS[1], description=composed.RECORDS_TO_COLUMNS[0]),
         ]
 
     @classmethod

@@ -19,6 +19,7 @@ vgi_xslt/
   engine.py            pure Saxon primitives; the singleton processor + compile caches; ONLY saxonche importer
   scalars.py           per-row scalars (xslt, xpath_string/boolean/number/array, xquery, is_well_formed)
   tables.py            table functions: xpath_nodes, xquery_rows, saxon_info
+  composed.py          composed (multi-function) example SQL, defined once; pinned by test/sql/composed.test
   schema_utils.py      pa.Field comment / column-doc helper
 tests/                 pytest: test_engine (pure), test_tables (in-proc), test_scalars (Client RPC)
 test/sql/*.test        haybarn-unittest sqllogictest — authoritative E2E
@@ -66,7 +67,7 @@ This is the heart of the worker — do not regress it.
    SKIPPED. Use an explicit `statement ok` / `LOAD vgi;` instead (every `.test`
    here already does). `LOAD vgi` also works under the locally-built vgi
    unittest. Run the SQL suite with:
-   `VGI_XSLT_WORKER="uv run --python 3.13 xslt_worker.py" haybarn-unittest --keep-home --test-dir . "test/sql/*"`.
+   `VGI_XSLT_WORKER=".venv/bin/python xslt_worker.py" haybarn-unittest --keep-home --test-dir . "test/sql/*"`.
 2. **A LIST return type needs an explicit `Returns(arrow_type=...)`.**
    `xpath_array` returns `VARCHAR[]`; its `compute` is annotated
    `-> Annotated[pa.ListArray, Returns(arrow_type=pa.list_(pa.string()))]`. The
@@ -113,7 +114,7 @@ make test                     # both
 uv run ruff check . && uv run mypy vgi_xslt/
 ```
 
-`make test-sql` sets `VGI_XSLT_WORKER="uv run --python 3.13 xslt_worker.py"`,
+`make test-sql` sets `VGI_XSLT_WORKER=".venv/bin/python xslt_worker.py"` (the `uv sync`ed venv, not `uv run xslt_worker.py`, whose PEP 723 env can pin a stale vgi-python),
 puts `~/.local/bin` on PATH, and runs `haybarn-unittest --keep-home --test-dir . "test/sql/*"`.
 Install the runner once with
 `uv tool install --prerelease allow 'haybarn-unittest>=2.0.0rc11,<2.1'` (haybarn 2.0 is required:

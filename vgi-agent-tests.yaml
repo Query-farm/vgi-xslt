@@ -34,3 +34,9 @@ tasks:
   - name: engine-supports-xsd-validation
     reference_sql: "SELECT schema_aware FROM xslt.main.saxon_info"
     ignore_column_names: true
+  - name: total-well-formed-orders
+    reference_sql: "WITH docs(doc) AS (VALUES ('<po no=\"P-1\"><item qty=\"3\" price=\"4\"/><item qty=\"1\" price=\"2.5\"/></po>'), ('<po no=\"P-2\"><item qty=\"2\" price=\"10\"/></po>'), ('<po no=\"P-3\"><item qty=\"1\" price=\"5\"></po>')) SELECT xslt.main.xpath_string(doc, 'string(/po/@no)') AS order_no, xslt.main.xpath_number(doc, 'sum(//item/(@qty * @price))') AS total FROM docs WHERE xslt.main.is_well_formed(doc) ORDER BY order_no"
+    ignore_column_names: true
+  - name: books-over-ten
+    reference_sql: "SELECT xslt.main.xpath_string(r.value, '/book/title') AS title, xslt.main.xpath_number(r.value, '/book/price') AS price FROM xslt.main.xquery_rows('<shelf><book><title>Dune</title><price>9.99</price></book><book><title>Emma</title><price>12.5</price></book><book><title>Ulysses</title><price>15</price></book></shelf>', 'for $b in /shelf/book[number(price) > 10] return serialize($b)') AS r ORDER BY price"
+    ignore_column_names: true

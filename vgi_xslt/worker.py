@@ -39,6 +39,7 @@ import json
 from vgi import Worker
 from vgi.catalog import Catalog, ConstraintInfo, Schema, Table, constraint_record
 
+from vgi_xslt import composed
 from vgi_xslt.scalars import SCALAR_FUNCTIONS
 from vgi_xslt.tables import TABLE_FUNCTIONS, SaxonInfoFunction
 
@@ -214,6 +215,8 @@ _SCHEMA_EXAMPLE_QUERIES = json.dumps(
             "description": "Explode a document into numbered (seq, value) rows in document order.",
             "sql": "SELECT seq, value FROM xslt.main.xpath_nodes('<r><i>a</i><i>b</i></r>', '//i') ORDER BY seq",
         },
+        # Composed examples: several of the worker's functions in one query.
+        *({"description": d, "sql": q} for d, q in composed.ALL),
     ]
 )
 
@@ -336,6 +339,29 @@ _AGENT_TEST_TASKS = json.dumps(
                 "Apply the following XSLT 3.0 stylesheet to the document "
                 "'<greeting><name>World</name></greeting>' and return the serialized result.\n\n"
                 f"Stylesheet:\n{_TASK_STYLESHEET}"
+            ),
+        },
+        {
+            "name": "total-well-formed-orders",
+            "prompt": (
+                "Three purchase-order XML documents arrived: "
+                '\'<po no="P-1"><item qty="3" price="4"/><item qty="1" price="2.5"/></po>\', '
+                '\'<po no="P-2"><item qty="2" price="10"/></po>\' and '
+                '\'<po no="P-3"><item qty="1" price="5"></po>\'. Write and run a single SQL '
+                "query that ignores any document that is not well-formed XML and, for each remaining "
+                "one, returns two columns: the <po> element's no attribute (order_no, VARCHAR) and the "
+                "order total, the sum of qty times price over its <item> elements (total, DOUBLE), "
+                "ordered by order_no."
+            ),
+        },
+        {
+            "name": "books-over-ten",
+            "prompt": (
+                "Given the XML '<shelf><book><title>Dune</title><price>9.99</price></book>"
+                "<book><title>Emma</title><price>12.5</price></book>"
+                "<book><title>Ulysses</title><price>15</price></book></shelf>', write and run a "
+                "single SQL query that returns one row per <book> whose price is greater than 10, "
+                "with two columns: the book's title (VARCHAR) and its price (DOUBLE), ordered by price."
             ),
         },
         {

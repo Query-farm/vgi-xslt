@@ -1,0 +1,57 @@
+# name: test/sql/composed.test
+# description: Composed examples (vgi_xslt/composed.py) and the composed agent-task graders
+# group: [vgi_xslt]
+#
+# Each query below is copied verbatim from vgi_xslt/composed.py or vgi-agent-tests.yaml;
+# tests/test_composed.py fails if they drift apart.
+
+require-env VGI_XSLT_WORKER
+
+statement ok
+LOAD vgi;
+
+statement ok
+ATTACH 'xslt' AS xslt (TYPE vgi, LOCATION '{VGI_XSLT_WORKER}');
+
+# xquery_rows -> xpath_string / xpath_number per exploded record
+query IIII
+SELECT r.seq, xslt.main.xpath_string(r.value, '/book/title') AS title, xslt.main.xpath_string(r.value, 'string(/book/@lang)') AS lang, xslt.main.xpath_number(r.value, '/book/price') AS price FROM xslt.main.xquery_rows('<catalog><book lang="en"><title>Dune</title><price>9.99</price></book><book lang="fr"><title>Candide</title><price>7.5</price></book><book lang="en"><title>Emma</title><price>12</price></book></catalog>', 'for $b in /catalog/book return serialize($b)') AS r ORDER BY r.seq;
+----
+1	Dune	en	9.99
+2	Candide	fr	7.5
+3	Emma	en	12.0
+
+# is_well_formed filter -> xpath_string + xpath_number (malformed C3 dropped)
+query IIII
+WITH docs(id, doc) AS (VALUES (1, '<order id="A1"><customer>acme</customer><line sku="bolt" qty="2" price="9.5"/><line sku="nut" qty="10" price="0.25"/></order>'), (2, '<order id="B7"><customer>globex</customer><line sku="bolt" qty="4" price="9.5"/></order>'), (3, '<order id="C3"><customer>initech</order>')) SELECT id, xslt.main.xpath_string(doc, 'string(/order/@id)') AS order_id, xslt.main.xpath_string(doc, '/order/customer') AS customer, xslt.main.xpath_number(doc, 'sum(//line/(@qty * @price))') AS total FROM docs WHERE xslt.main.is_well_formed(doc) ORDER BY id;
+----
+1	A1	acme	21.5
+2	B7	globex	38.0
+
+# UNNEST(xpath_array) zipped by position, tagged via xpath_string, aggregated per SKU
+query III
+WITH docs(id, doc) AS (VALUES (1, '<order id="A1"><customer>acme</customer><line sku="bolt" qty="2"/><line sku="nut" qty="10"/></order>'), (2, '<order id="B7"><customer>globex</customer><line sku="bolt" qty="4"/></order>')), lines AS (SELECT xslt.main.xpath_string(doc, '/order/customer') AS customer, UNNEST(xslt.main.xpath_array(doc, '//line/@sku')) AS sku, CAST(UNNEST(xslt.main.xpath_array(doc, '//line/@qty')) AS INTEGER) AS qty FROM docs) SELECT sku, CAST(SUM(qty) AS BIGINT) AS total_qty, string_agg(customer, ',' ORDER BY customer) AS customers FROM lines GROUP BY sku ORDER BY sku;
+----
+bolt	6	acme,globex
+nut	10	acme
+
+# xslt output fed into the xpath_nodes table function
+query II
+SELECT seq, value FROM xslt.main.xpath_nodes(xslt.main.xslt('<feed><entry><t>a</t></entry><entry><t>b</t></entry></feed>', '<xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"><xsl:template match="/"><items><xsl:for-each select="//entry"><item><xsl:value-of select="upper-case(t)"/></item></xsl:for-each></items></xsl:template></xsl:stylesheet>'), '//item') ORDER BY seq;
+----
+1	A
+2	B
+
+# agent-task grader: total-well-formed-orders
+query II
+WITH docs(doc) AS (VALUES ('<po no="P-1"><item qty="3" price="4"/><item qty="1" price="2.5"/></po>'), ('<po no="P-2"><item qty="2" price="10"/></po>'), ('<po no="P-3"><item qty="1" price="5"></po>')) SELECT xslt.main.xpath_string(doc, 'string(/po/@no)') AS order_no, xslt.main.xpath_number(doc, 'sum(//item/(@qty * @price))') AS total FROM docs WHERE xslt.main.is_well_formed(doc) ORDER BY order_no;
+----
+P-1	14.5
+P-2	20.0
+
+# agent-task grader: books-over-ten
+query II
+SELECT xslt.main.xpath_string(r.value, '/book/title') AS title, xslt.main.xpath_number(r.value, '/book/price') AS price FROM xslt.main.xquery_rows('<shelf><book><title>Dune</title><price>9.99</price></book><book><title>Emma</title><price>12.5</price></book><book><title>Ulysses</title><price>15</price></book></shelf>', 'for $b in /shelf/book[number(price) > 10] return serialize($b)') AS r ORDER BY price;
+----
+Emma	12.5
+Ulysses	15.0

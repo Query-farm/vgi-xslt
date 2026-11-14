@@ -37,7 +37,7 @@ from vgi.arguments import Param, Returns
 from vgi.metadata import FunctionExample
 from vgi.scalar_function import ScalarFunction
 
-from . import engine
+from . import composed, engine
 from .meta import object_tags
 
 # VGI509: a guaranteed-runnable, self-contained executable example shipped on at
@@ -57,7 +57,12 @@ _XSLT_EXECUTABLE_EXAMPLES = json.dumps(
         {
             "description": _XSLT_EXAMPLE_DESC,
             "sql": _XSLT_EXAMPLE_SQL,
-        }
+        },
+        # Composed: the xslt output feeds the xpath_nodes table function.
+        {
+            "description": composed.TRANSFORM_THEN_SHRED[0],
+            "sql": composed.TRANSFORM_THEN_SHRED[1],
+        },
     ]
 )
 
@@ -431,6 +436,7 @@ class XPathArrayFunction(ScalarFunction):
                     "Shred all matching nodes into rows with UNNEST.",
                     "SELECT UNNEST(xslt.main.xpath_array('<r><i>a</i><i>b</i></r>', '//i'))",
                 ),
+                composed.SHRED_AND_AGGREGATE,
             ],
         )
         examples = [
@@ -438,6 +444,7 @@ class XPathArrayFunction(ScalarFunction):
                 sql="SELECT UNNEST(xslt.main.xpath_array('<r><i>a</i><i>b</i></r>', '//i'))",
                 description="Shred all matching nodes into rows",
             ),
+            FunctionExample(sql=composed.SHRED_AND_AGGREGATE[1], description=composed.SHRED_AND_AGGREGATE[0]),
         ]
 
     @classmethod
@@ -582,6 +589,7 @@ class IsWellFormedFunction(ScalarFunction):
                     "Check whether a string is well-formed XML.",
                     "SELECT xslt.main.is_well_formed('<a></a>')",
                 ),
+                composed.VALIDATE_THEN_EXTRACT,
             ],
         )
         examples = [
@@ -589,6 +597,7 @@ class IsWellFormedFunction(ScalarFunction):
                 sql="SELECT xslt.main.is_well_formed('<a></a>')",
                 description="Check whether a string is well-formed XML",
             ),
+            FunctionExample(sql=composed.VALIDATE_THEN_EXTRACT[1], description=composed.VALIDATE_THEN_EXTRACT[0]),
         ]
 
     @classmethod
