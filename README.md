@@ -261,3 +261,7 @@ Written by [Query.Farm](https://query.farm).
 
 Copyright 2026 Query Farm LLC - https://query.farm
 
+
+## Notebooks
+
+[Executed SQL walkthrough](notebooks/README.md): audit XML document coverage, transform exact namespaces, shred records, and visualize selected known quantities without hiding invalid input.
