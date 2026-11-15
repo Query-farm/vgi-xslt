@@ -71,13 +71,15 @@ _FUNCTIONS: list[type] = [
 
 _CATALOG_DESCRIPTION_LLM = (
     "Transform, query, and shred XML in SQL using XSLT 3.0, XQuery 3.1, and XPath 3.1, backed by "
-    "SaxonC-HE. Apply an XSLT stylesheet to a document (xslt), pull the string/boolean/numeric value "
-    "of an XPath expression (xpath_string / xpath_boolean / xpath_number), collect every XPath match "
-    "into a list to UNNEST into rows (xpath_array), run an XQuery with the document as context item "
-    "(xquery), check whether text is well-formed XML (is_well_formed), and explode one document into "
-    "rows via the table functions xpath_nodes (per XPath match) and xquery_rows (per XQuery sequence "
-    "item). Use for XML extraction/transformation, shredding XML into relational rows, and "
-    "well-formedness checks. Note: SaxonC-HE is not schema-aware, so there is no XSD validation."
+    "SaxonC-HE (https://www.saxonica.com/) via the saxonche Python bindings. Key concepts: per-row "
+    "scalars compute one value per document (a transformed document, or the text, boolean, number, or "
+    "list an expression yields), while the set-returning functions and the array-plus-UNNEST pattern "
+    "explode one document into many rows, the natural way to shred repeated XML structure into a "
+    "relational result. A well-formedness check lets you filter malformed rows before processing. NULL "
+    "input passes through as NULL (or no rows); malformed XML or a bad stylesheet/expression raises a "
+    "clean error. Stylesheets and queries compile once per distinct text, so a constant stylesheet applied "
+    "down a column is cheap. Use it for XML extraction/transformation, shredding XML into relational "
+    "rows, and well-formedness checks. Note: SaxonC-HE is not schema-aware, so there is no XSD validation."
 )
 
 _CATALOG_DESCRIPTION_MD = (
