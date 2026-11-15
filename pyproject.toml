@@ -69,6 +69,9 @@ packages = ["vgi_xslt"]
 [tool.ruff]
 line-length = 120
 target-version = "py313"
+# notebooks/ is maintained by vgi-example-notebooks with its own lint config, and its
+# reviewed coverage records hash the notebook files; keep it out of the worker's ruff run.
+extend-exclude = ["notebooks"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "D"]
