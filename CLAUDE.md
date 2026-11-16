@@ -114,13 +114,12 @@ make test                     # both
 uv run ruff check . && uv run mypy vgi_xslt/
 ```
 
-`make test-sql` sets `VGI_XSLT_WORKER=".venv/bin/python xslt_worker.py"` (the `uv sync`ed venv, not `uv run xslt_worker.py`, whose PEP 723 env can pin a stale vgi-python),
-puts `~/.local/bin` on PATH, and runs `haybarn-unittest --keep-home --test-dir . "test/sql/*"`.
-Install the runner once with
-`uv tool install --prerelease allow 'haybarn-unittest>=2.0.0rc11,<2.1'` (haybarn 2.0 is required:
-its community `vgi` extension speaks the worker's VGI protocol vgi.v3 / 3.3). CI
-(`.github/workflows/ci.yml`) runs unit + lint + a gated `e2e` job that installs
-haybarn-unittest and runs `make test-sql`.
+`make test-sql` runs `ci/run-integration.sh` with `WORKER=.venv/bin/vgi-xslt-worker`
+(the `uv sync`ed venv) over stdio, launch and http; `make tools` installs the
+pinned `haybarn-unittest` into `.tools` (haybarn 2.0 is required: its community
+`vgi` extension speaks the worker's VGI protocol vgi.v3 / 3.3). CI
+(`.github/workflows/ci.yml`) runs unit + lint + the same script in an
+`integration` transport matrix.
 
 Everything is offline (no network) — the first run downloads the `saxonche`
 wheel (~38 MB, the bundled native runtime), after which the suite is fast and

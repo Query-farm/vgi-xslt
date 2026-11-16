@@ -230,7 +230,7 @@ in-process; `tests/test_scalars.py` spawns `xslt_worker.py` over the VGI
 client/RPC stack exactly as DuckDB would after `ATTACH`. The `test/sql/*.test`
 files are DuckDB sqllogictest cases run by
 [`haybarn-unittest`](https://pypi.org/project/haybarn-unittest/)
-(`uv tool install --prerelease allow 'haybarn-unittest>=2.0.0rc11,<2.1'`; haybarn 2.0 is
+(`make test-sql`, over stdio, launch and http; haybarn 2.0 is
 required, since its community `vgi` extension speaks the worker's VGI protocol
 vgi.v3 / 3.3) against a real `ATTACH` + `SELECT`.
 

@@ -11,3 +11,4 @@ duckdb_unittest_tempdir/
 .coverage
 # vgi-lint --execute --ai review/simulate caches
 .vgi-*-cache.json
+.tools/

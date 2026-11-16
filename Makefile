@@ -1,40 +1,46 @@
-# vgi-xslt — dev and test targets.
+# vgi-xslt — dev and test targets. `make help` lists them. Requires uv.
 #
-# Usage:
-#   make test       # unit/integration (pytest) + end-to-end SQL (haybarn-unittest)
-#   make test-unit  # pytest only
-#   make test-sql   # DuckDB sqllogictest .test files via haybarn-unittest
+#   make test       # unit tests (pytest) + SQL tests over stdio, launch and http
+#   make test-sql   # test/sql/*.test through DuckDB (haybarn-unittest + the signed
+#                   # community `vgi` extension) via ci/run-integration.sh
+#   make check      # everything CI runs
 #
-# test-sql is self-contained: it points VGI_XSLT_WORKER at the worker run as a
-# uv stdio subprocess (exactly how DuckDB drives it after ATTACH) and runs the
-# files under test/sql/. haybarn-unittest is a uv tool:
-#   uv tool install --prerelease allow 'haybarn-unittest>=2.0.0rc11,<2.1'   # installs ~/.local/bin/haybarn-unittest
+# haybarn 2.0 is required: its community `vgi` extension speaks the worker's VGI
+# protocol (vgi.v3 / 3.3). `make tools` installs the pinned runner into .tools.
 
-# Worker command DuckDB uses for ATTACH (overridable). Drive the worker through
-# the project venv's Python (the SDK installed by `uv sync`), not `uv run
-# xslt_worker.py` — the latter resolves the script's PEP 723 inline deps into a
-# separate, cached environment that can pin a stale vgi-python and emit an
-# out-of-date catalog schema.
-WORKER_STDIO    ?= .venv/bin/python xslt_worker.py
+HAYBARN_VERSION  ?= 2.0.0rc11
+WORKER           := $(CURDIR)/.venv/bin/vgi-xslt-worker
+TOOLS            := $(CURDIR)/.tools
+HAYBARN_UNITTEST := $(TOOLS)/bin/haybarn-unittest
+TRANSPORTS       ?= stdio launch http
 
-# haybarn-unittest lives in the uv tools bin; keep it on PATH.
-HAYBARN_BIN     ?= $(HOME)/.local/bin
-TEST_DIR         = .
-TEST_PATTERN     = test/sql/*
+build: ## Install the worker (all extras: HTTP serving needs `http`) into .venv
+	uv sync --locked --all-extras
 
-.PHONY: test test-unit test-sql lint
+tools: ## Install the pinned SQL test runner into .tools
+	@test -x $(HAYBARN_UNITTEST) || { uv venv -q $(TOOLS) && uv pip install -q -p $(TOOLS) haybarn-unittest==$(HAYBARN_VERSION); }
 
-test: test-unit test-sql
+test-sql: build tools ## SQL tests through DuckDB over each transport: make test-sql TRANSPORTS=launch
+	@set -e; for t in $(TRANSPORTS); do \
+	  WORKER=$(WORKER) HAYBARN_UNITTEST=$(HAYBARN_UNITTEST) TRANSPORT=$$t ci/run-integration.sh; \
+	done
 
-test-unit:
+test-sql-all: test-sql ## Alias: SQL tests over every transport
+
+.DEFAULT_GOAL := help
+.PHONY: help build tools test test-unit test-sql test-sql-all lint check
+
+help: ## List the targets
+	@awk 'BEGIN{FS=":.*## "} /^[a-zA-Z_-]+:.*## /{printf "  %-14s %s\n",$$1,$$2}' $(MAKEFILE_LIST)
+
+test-unit: build ## Unit tests (pytest)
 	uv run pytest -q
 
-test-sql:
-	PATH="$(HAYBARN_BIN):$$PATH" \
-		VGI_XSLT_WORKER="$(WORKER_STDIO)" \
-		haybarn-unittest --keep-home --test-dir "$(TEST_DIR)" "$(TEST_PATTERN)"
+test: test-unit test-sql ## Unit + SQL tests
 
-lint:
+check: lint test ## Everything CI runs
+
+lint: ## Static checks: ruff, mypy
 	uv run ruff format --check .
 	uv run ruff check .
 	uv run mypy vgi_xslt/
