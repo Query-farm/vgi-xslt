@@ -7,7 +7,7 @@
 # via SaxonC-HE (the saxonche wheel bundles the native GraalVM runtime) -- keyless,
 # offline, no network at query time.
 # syntax=docker/dockerfile:1
-FROM python:3.13-slim
+FROM python:3.14-slim
 
 ARG VERSION=0.0.0
 ARG GIT_COMMIT=unknown

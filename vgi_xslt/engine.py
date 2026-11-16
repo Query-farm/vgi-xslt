@@ -221,7 +221,7 @@ def xpath_number(xml: str, expr: str) -> float | None:
             return None
         try:
             return float(item.string_value)
-        except (TypeError, ValueError):
+        except TypeError, ValueError:
             return None
 
 

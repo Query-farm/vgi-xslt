@@ -32,7 +32,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        python-version: ["3.13"]
+        python-version: ["3.14"]
 
     steps:
       - uses: actions/checkout@v6
@@ -53,7 +53,7 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     env:
-      UV_PYTHON: "3.13"
+      UV_PYTHON: "3.14"
     steps:
       - uses: actions/checkout@v6
 
@@ -85,18 +85,18 @@ jobs:
     name: Metadata quality (vgi-lint)
     runs-on: ubuntu-latest
     env:
-      UV_PYTHON: "3.13"
+      UV_PYTHON: "3.14"
     steps:
       - uses: actions/checkout@v6
 
       - name: Install uv
         uses: astral-sh/setup-uv@v8.2.0
 
-      - name: Set up Python 3.13
-        run: uv python install 3.13
+      - name: Set up Python 3.14
+        run: uv python install 3.14
 
       - name: Install the worker
-        run: uv sync --all-extras --python 3.13
+        run: uv sync --all-extras --python 3.14
 
       - name: vgi-lint
         uses: Query-farm/vgi-lint-check@v2
@@ -144,7 +144,7 @@ jobs:
           - { os: ubuntu-latest, asset: haybarn_unittest-linux-amd64.zip }
     runs-on: ${{ matrix.os }}
     env:
-      UV_PYTHON: "3.13"
+      UV_PYTHON: "3.14"
     defaults:
       run:
         shell: bash
@@ -154,11 +154,11 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v8.2.0
 
-      - name: Set up Python 3.13
-        run: uv python install 3.13
+      - name: Set up Python 3.14
+        run: uv python install 3.14
 
       - name: Install the worker (from the lockfile)
-        run: uv sync --frozen --python 3.13 --extra http
+        run: uv sync --frozen --python 3.14 --extra http
 
       - name: Download haybarn-unittest
         run: |
