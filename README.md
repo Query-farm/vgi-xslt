@@ -18,7 +18,7 @@ the [`saxonche`](https://pypi.org/project/saxonche/) Python bindings.
 
 ```sql
 INSTALL vgi FROM community; LOAD vgi;
-ATTACH 'xslt' (TYPE vgi, LOCATION 'uvx --from git+https://github.com/Query-farm/vgi-xslt@v0.4.2 vgi-xslt-worker');
+ATTACH 'xslt' (TYPE vgi, LOCATION 'uvx --from git+https://github.com/Query-farm/vgi-xslt@v0.5.0 vgi-xslt-worker');
 
 SELECT xslt.xpath_string('<r><a>x</a></r>', '//a');            -- 'x'
 SELECT xslt.xpath_boolean('<r><a/></r>', 'count(//a) = 1');    -- true
@@ -38,6 +38,8 @@ SELECT id, UNNEST(xpath_array(doc, '//item')) AS item
 FROM documents;
 ```
 
+vgi-xslt 0.5.0 speaks VGI protocol 3.4, so it needs Haybarn 2.0.1 or newer (Haybarn 2.0.0 loads a 3.3 `vgi` extension that cannot attach it).
+
 ## Quick start
 
 The worker isn't on PyPI; [uv](https://docs.astral.sh/uv/) runs it straight from a tagged release on GitHub. `uvx` builds an isolated environment on the first ATTACH and reuses it afterwards:
@@ -46,7 +48,7 @@ The worker isn't on PyPI; [uv](https://docs.astral.sh/uv/) runs it straight from
 INSTALL vgi FROM community;
 LOAD vgi;
 
-ATTACH 'xslt' AS xslt (TYPE vgi, LOCATION 'uvx --from git+https://github.com/Query-farm/vgi-xslt@v0.4.2 vgi-xslt-worker');
+ATTACH 'xslt' AS xslt (TYPE vgi, LOCATION 'uvx --from git+https://github.com/Query-farm/vgi-xslt@v0.5.0 vgi-xslt-worker');
 
 -- Test an XPath count predicate as a boolean.
 SELECT xslt.main.xpath_boolean('<r><a/></r>', 'count(//a) = 1');
@@ -55,14 +57,14 @@ SELECT xslt.main.xpath_boolean('<r><a/></r>', 'count(//a) = 1');
 SELECT xslt.main.xpath_number('<r><n>42</n></r>', 'number(//n)');
 ```
 
-Change `@v0.4.2` to move to a newer release.
+Change `@v0.5.0` to move to a newer release.
 
 ### Other ways to run it
 
 - **Docker** (the image bundles the worker and its dependencies):
 
   ```sql
-  ATTACH 'xslt' AS xslt (TYPE vgi, LOCATION 'docker://ghcr.io/query-farm/vgi-xslt:0.4.2');
+  ATTACH 'xslt' AS xslt (TYPE vgi, LOCATION 'docker://ghcr.io/query-farm/vgi-xslt:0.5.0');
   ```
 
 - **From a local checkout** (`git clone https://github.com/Query-farm/vgi-xslt`), point `LOCATION` at `uv run --project /path/to/vgi-xslt vgi-xslt-worker`.
@@ -232,7 +234,7 @@ files are DuckDB sqllogictest cases run by
 [`haybarn-unittest`](https://pypi.org/project/haybarn-unittest/)
 (`make test-sql`, over stdio, launch and http; haybarn 2.0 is
 required, since its community `vgi` extension speaks the worker's VGI protocol
-vgi.v3 / 3.3) against a real `ATTACH` + `SELECT`.
+vgi.v3 / 3.4) against a real `ATTACH` + `SELECT`.
 
 ## Layout
 
